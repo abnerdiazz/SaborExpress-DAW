@@ -65,28 +65,30 @@
                         
                         <div class="mb-3">
                             <label class="form-label checkout-label" for="input-nombre">NOMBRE DE CONTACTO</label>
-                            <input type="text" class="form-control checkout-input" id="input-nombre" placeholder="Nombre y apellido">
+                            <input type="text" class="form-control checkout-input" id="input-nombre" placeholder="Nombre y apellido" autocomplete="name" maxlength="60">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label checkout-label" for="input-telefono">TELÉFONO DE CONTACTO</label>
-                            <input type="text" class="form-control checkout-input" id="input-telefono" placeholder="7777-7777">
+                            <input type="tel" class="form-control checkout-input" id="input-telefono" placeholder="7777-7777" inputmode="numeric" autocomplete="tel" maxlength="9">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label checkout-label" for="input-direccion">DIRECCIÓN DE ENTREGA</label>
-                            <input type="text" class="form-control checkout-input" id="input-direccion" placeholder="Calle, número, colonia y municipio">
+                            <input type="text" class="form-control checkout-input" id="input-direccion" placeholder="Calle, número, colonia y municipio" autocomplete="street-address" maxlength="120">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label checkout-label">SELECCIONA TU UBICACIÓN EN EL MAPA</label>
                             <div id="map" class="map-container"></div>
-                            <p class="map-helper-text">Mueve el pin para ajustar tu ubicación exacta</p>
+                            <p class="map-helper-text">Mueve el pin o toca el mapa para marcar tu ubicación. El círculo rojo es nuestra zona de entrega.</p>
+                            <div id="zone-status" class="zone-status zone-pending" role="status" aria-live="polite"></div>
+                            <button type="button" id="btn-ubicacion" class="btn btn-sm btn-locate mt-2"><i class="bi bi-crosshair me-1"></i>Usar mi ubicación actual</button>
                         </div>
 
                         <div class="mb-0">
                             <label class="form-label checkout-label" for="input-referencia">PUNTO DE REFERENCIA</label>
-                            <input type="text" class="form-control checkout-input" id="input-referencia" placeholder="Frente a la plaza central, junto a las bancas">
+                            <input type="text" class="form-control checkout-input" id="input-referencia" placeholder="Frente a la plaza central, junto a las bancas" maxlength="120">
                         </div>
                     </div>
 
@@ -136,14 +138,12 @@
                             <span class="summary-total-value" id="checkout-total">$0.00</span>
                         </div>
 
-                        <div id="checkout-error" class="alert alert-danger py-2 small d-none" role="alert"></div>
-
                         <button type="button" class="btn-confirm-order" id="btn-confirm-order">
                             Confirmar pedido
                         </button>
 
                         <p class="confirm-disclaimer">
-                            Al confirmar, te redirigiremos a WhatsApp para enviar el detalle de tu pedido directamente.
+                            Al confirmar podrás descargar tu comprobante en PDF y enviar el detalle de tu pedido por WhatsApp.
                         </p>
                     </div>
                 </div>
@@ -167,6 +167,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script type="module" src="js/carrito.js"></script>
+    <script type="module" src="js/checkout.js"></script>
 </body>
 </html>
