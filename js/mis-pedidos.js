@@ -1,7 +1,7 @@
-import { iniciarNavbar, leerSesion, obtenerPedidos } from './saborexpress-data.js';
+import { iniciarNavbar, leerSesion, obtenerPedidos, actualizarEstadoPedido } from './saborexpress-data.js';
+import { money, esc } from './compra-utils.js';
+import { aviso, confirmar, toast } from './alertas.js';
 
-const money = value => `$${Number(value || 0).toFixed(2)}`;
-const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 const hora = fecha => fecha.toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' });
 
 const PASOS = [
@@ -47,6 +47,9 @@ function tarjetaPedido(pedido) {
         <a href="https://wa.me/50322000000?text=${mensaje}" target="_blank" rel="noopener" class="btn btn-outline-brand w-100">
             <i class="bi bi-whatsapp me-1"></i> Contactar repartidor vía WhatsApp
         </a>
+        ${String(pedido.estado).toLowerCase() === 'pendiente' ? `<button type="button" class="btn btn-outline-danger w-100 mt-2" data-cancelar="${esc(pedido.id)}">
+            <i class="bi bi-x-circle me-1"></i> Cancelar pedido
+        </button>` : ''}
     </div>`;
 }
 
@@ -63,8 +66,8 @@ function filaHistorial(pedido) {
     </tr>`;
 }
 
-async function init() {
-    iniciarNavbar();
+/** Lee los pedidos del cliente con sesión iniciada y pinta la página. */
+async function cargar() {
     const actual = document.getElementById('pedidoActual');
     const historial = document.getElementById('historialSection');
     const sesion = leerSesion();
@@ -84,6 +87,46 @@ async function init() {
         : tarjetaVacia('No tienes pedidos en curso', 'Cuando confirmes un pedido lo verás aquí con su estado.', '<a href="menu.html" class="btn btn-brand">Ver menú</a>');
     document.getElementById('historialBody').innerHTML = propios.length ? propios.map(filaHistorial).join('')
         : '<tr><td colspan="5" class="text-center text-secondary py-4">Aún no has realizado pedidos.</td></tr>';
+}
+
+/** Regla de negocio: un pedido solo se puede cancelar mientras sigue Pendiente. */
+async function cancelarPedido(id) {
+    const acepto = await confirmar({
+        titulo: '¿Cancelar este pedido?',
+        texto: 'Solo puedes cancelarlo mientras no haya empezado a prepararse. Esta acción no se puede deshacer.',
+        icon: 'warning',
+        confirmText: 'Sí, cancelar pedido',
+        cancelText: 'No, mantenerlo'
+    });
+    if (!acepto) return;
+
+    // El administrador pudo haberlo cambiado de estado mientras decidías: se vuelve a comprobar.
+    const { datos } = await obtenerPedidos();
+    const pedido = datos.find(item => item.id === id);
+    if (!pedido || String(pedido.estado).toLowerCase() !== 'pendiente') {
+        await aviso('Ya no se puede cancelar', 'Tu pedido ya está en preparación. Puedes contactar al repartidor por WhatsApp.');
+        await cargar();
+        return;
+    }
+
+    actualizarEstadoPedido(id, 'Cancelado');
+    toast(`Pedido #${id} cancelado.`, 'info');
+    await cargar();
+}
+
+async function init() {
+    iniciarNavbar();
+    await cargar();
+
+    document.getElementById('pedidoActual').addEventListener('click', evento => {
+        const boton = evento.target.closest('[data-cancelar]');
+        if (boton) cancelarPedido(boton.dataset.cancelar);
+    });
+
+    // Si el administrador cambia el estado desde otra pestaña, esta página se actualiza sola.
+    window.addEventListener('storage', evento => {
+        if (evento.key === 'saborExpressPedidos') cargar();
+    });
 }
 
 document.addEventListener('DOMContentLoaded', init);
