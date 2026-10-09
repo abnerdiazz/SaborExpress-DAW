@@ -1,0 +1,52 @@
+/* ==========================================================================
+   SaborExpress · Foro 1 · Reportes (estilos adicionales)
+   Se carga DESPUÉS de menu-reportes.css y solo agrega lo nuevo del panel:
+   contenedores de gráficas, mensaje de "sin datos" y banner de demostración.
+   ========================================================================== */
+
+.chart-box {
+    position: relative;
+    height: 260px;
+}
+
+.chart-box canvas {
+    max-height: 100%;
+}
+
+/* Mensaje que se muestra encima de una gráfica cuando no hay datos en el rango */
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    background: rgba(255, 255, 255, .92);
+    color: var(--se-muted);
+    font-weight: 600;
+    text-align: center;
+    border-radius: 12px;
+}
+
+.chart-empty i {
+    font-size: 1.8rem;
+    color: var(--se-border);
+}
+
+/* Aviso cuando hay pedidos de demostración mezclados con los reales */
+.demo-banner {
+    background: var(--se-primary-soft);
+    border: 1px solid var(--se-border);
+    border-radius: 12px;
+    color: var(--se-primary-dark);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: .7rem 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .chart-box {
+        height: 220px;
+    }
+}

@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/menu-reportes.css">
+    <link rel="stylesheet" href="css/admin-reportes.css">
 </head>
 <body class="admin-wireframe-page">
     <!-- Navegación administrativa -->
@@ -57,8 +58,16 @@
                 <strong class="me-1"><i class="bi bi-calendar3 me-2 text-secondary"></i>Rango de fecha:</strong>
                 <button class="range-chip active" type="button" data-range="7">Última semana</button>
                 <button class="range-chip" type="button" data-range="30">Último mes</button>
-                <button class="btn btn-sm btn-outline-dark ms-lg-auto" type="button" data-bs-toggle="modal" data-bs-target="#customRangeModal">Personalizar rango</button>
+                <div class="d-flex flex-wrap gap-2 ms-lg-auto">
+                    <button id="btnDemoGenerar" class="btn btn-sm btn-outline-secondary" type="button"><i class="bi bi-magic me-1"></i>Datos de demostración</button>
+                    <button id="btnDemoQuitar" class="btn btn-sm btn-outline-secondary" type="button" disabled><i class="bi bi-trash3 me-1"></i>Quitar demostración</button>
+                    <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="modal" data-bs-target="#customRangeModal">Personalizar rango</button>
+                </div>
             </section>
+
+            <div id="demoBanner" class="demo-banner mb-4 d-none" role="status">
+                <i class="bi bi-info-circle me-2"></i><span id="demoBannerTexto"></span>
+            </div>
 
             <!-- Indicadores principales -->
             <section class="row g-3 mb-4" aria-label="Indicadores clave">
@@ -83,45 +92,79 @@
                 </div>
             </section>
 
-            <!-- Gráfica de ventas -->
+            <!-- Gráfica de ventas (clic en una barra = detalle del día) -->
             <section class="surface-card report-panel wireframe-chart-panel mb-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <h2 class="report-panel-title mb-0">Ventas por período <span id="salesPeriodLabel" class="text-secondary fw-normal">(Esta semana)</span></h2>
+                    <small class="text-secondary"><i class="bi bi-hand-index me-1"></i>Haz clic en una barra para ver los pedidos de ese día</small>
                 </div>
-                <div class="chart-container wireframe-chart-container">
-                    <canvas id="ventasChart" aria-label="Gráfica de ventas" role="img"></canvas>
+                <div class="chart-box wireframe-chart-container">
+                    <canvas id="ventasChart" aria-label="Gráfica de ventas por día" role="img"></canvas>
+                    <div class="chart-empty d-none" data-empty="pedidos"><i class="bi bi-bar-chart"></i><span>Sin ventas en este período</span></div>
                 </div>
             </section>
 
-            <!-- Productos más vendidos y ventas por categoría -->
-            <section class="row g-4">
+            <!-- Pedidos por día y estado de los pedidos -->
+            <section class="row g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="surface-card report-panel h-100">
+                        <h2 class="report-panel-title">Pedidos por día</h2>
+                        <div class="chart-box">
+                            <canvas id="pedidosDiaChart" aria-label="Gráfica de línea con la cantidad de pedidos por día" role="img"></canvas>
+                            <div class="chart-empty d-none" data-empty="pedidos"><i class="bi bi-graph-up"></i><span>Sin pedidos en este período</span></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-lg-5">
+                    <div class="surface-card report-panel h-100">
+                        <h2 class="report-panel-title">Estado de los pedidos</h2>
+                        <div class="chart-box">
+                            <canvas id="estadosChart" aria-label="Gráfica de dona con los pedidos por estado" role="img"></canvas>
+                            <div class="chart-empty d-none" data-empty="estados"><i class="bi bi-pie-chart"></i><span>Sin pedidos en este período</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ventas por categoría (gráfica) y productos más vendidos -->
+            <section class="row g-4 mb-4">
+                <div class="col-lg-5">
+                    <div class="surface-card report-panel h-100">
+                        <h2 class="report-panel-title">Ingresos por categoría</h2>
+                        <div class="chart-box">
+                            <canvas id="categoriasChart" aria-label="Gráfica de dona con los ingresos por categoría" role="img"></canvas>
+                            <div class="chart-empty d-none" data-empty="pedidos"><i class="bi bi-pie-chart"></i><span>Sin ventas en este período</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
                     <div class="surface-card report-panel h-100">
                         <h2 class="report-panel-title">Productos más vendidos</h2>
                         <div id="topProducts"></div>
                     </div>
                 </div>
+            </section>
 
-                <div class="col-lg-7">
-                    <div class="surface-card report-panel h-100">
-                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                            <h2 class="report-panel-title mb-0">Ventas por categoría</h2>
-                            <div class="d-flex flex-wrap gap-2">
-                                <div class="search-box admin-report-search">
-                                    <i class="bi bi-search"></i>
-                                    <input id="reportSearch" class="form-control form-control-sm" type="search" placeholder="Buscar categoría..." aria-label="Buscar categoría">
-                                </div>
-                                <button id="exportReportCsv" class="btn btn-sm btn-outline-dark" type="button"><i class="bi bi-download me-1"></i>CSV</button>
+            <!-- Detalle por categoría (tabla) -->
+            <section>
+                <div class="surface-card report-panel">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <h2 class="report-panel-title mb-0">Ventas por categoría</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            <div class="search-box admin-report-search">
+                                <i class="bi bi-search"></i>
+                                <input id="reportSearch" class="form-control form-control-sm" type="search" placeholder="Buscar categoría..." aria-label="Buscar categoría">
                             </div>
+                            <button id="exportReportCsv" class="btn btn-sm btn-outline-dark" type="button"><i class="bi bi-download me-1"></i>CSV</button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table admin-table align-middle">
-                                <thead><tr><th>Categoría</th><th class="text-end">Cantidad</th><th class="text-end">Total</th></tr></thead>
-                                <tbody id="categorySalesBody"></tbody>
-                            </table>
-                        </div>
-                        <div id="reportNoResults" class="text-center text-secondary py-4 d-none">No se encontraron categorías con ese criterio.</div>
                     </div>
+                    <div class="table-responsive">
+                        <table class="table admin-table align-middle">
+                            <thead><tr><th>Categoría</th><th class="text-end">Cantidad</th><th class="text-end">Total</th></tr></thead>
+                            <tbody id="categorySalesBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="reportNoResults" class="text-center text-secondary py-4 d-none">No se encontraron categorías con ese criterio.</div>
                 </div>
             </section>
         </div>
