@@ -1,24 +1,26 @@
 import { iniciarAdmin, leerProductosTodos, guardarProductos, PRODUCTOS_INICIALES } from './saborexpress-data.js';
+import { money, esc } from './compra-utils.js';
+import { confirmar, formulario, mensajeValidacion, toast } from './alertas.js';
+import { reglas, validarCampo, vincularValidacion, limpiarCampo, enfocarPrimerError } from './validaciones.js';
 
 let productos = [];
 
-const money = value => `$${Number(value || 0).toFixed(2)}`;
-const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
-const precioValido = valor => Number.isFinite(valor) && valor > 0 && valor <= 99;
+const reglaNombre = reglas.texto('el nombre', 3, 60);
 
 function render() {
     const grid = document.getElementById('admin-menu-grid');
     grid.innerHTML = productos.length ? productos.map(producto => `
         <div class="col-md-4">
-            <div class="admin-card">
+            <div class="admin-card ${producto.activo === false ? 'opacity-50' : ''}">
                 <img src="${esc(producto.imagen)}" class="admin-card-img" alt="${esc(producto.nombre)}">
                 <div class="admin-card-body">
-                    <h3 class="admin-product-title">${esc(producto.nombre)}</h3>
+                    <h3 class="admin-product-title">${esc(producto.nombre)} ${producto.activo === false ? '<span class="badge text-bg-secondary align-middle">Oculto</span>' : ''}</h3>
                     <p class="admin-product-category">${esc(producto.categoria)}</p>
                     <p class="admin-product-price">${money(producto.precio)}</p>
                 </div>
                 <div class="admin-card-footer d-flex justify-content-between align-items-center">
                     <button type="button" class="btn-action-text btn-action-edit" data-id="${esc(producto.id)}">[Editar]</button>
+                    <button type="button" class="btn-action-text btn-action-toggle" data-id="${esc(producto.id)}">[${producto.activo === false ? 'Mostrar' : 'Ocultar'}]</button>
                     <button type="button" class="btn-action-text btn-action-delete" data-id="${esc(producto.id)}">[Eliminar]</button>
                 </div>
             </div>
@@ -40,56 +42,116 @@ function persistir() {
     render();
 }
 
+/** Cuadro de SweetAlert para editar nombre y precio, con validación antes de cerrar. */
+async function editarProducto(producto) {
+    const { confirmado, valor } = await formulario({
+        titulo: 'Editar producto',
+        confirmText: 'Guardar cambios',
+        html: `
+            <div class="text-start">
+                <label class="form-label small fw-bold" for="swal-nombre">Nombre</label>
+                <input id="swal-nombre" class="form-control mb-3" maxlength="60" value="${esc(producto.nombre)}">
+                <label class="form-label small fw-bold" for="swal-precio">Precio ($)</label>
+                <input id="swal-precio" type="number" step="0.01" min="0.01" max="99" class="form-control" value="${Number(producto.precio).toFixed(2)}">
+            </div>`,
+        preConfirm: () => {
+            const nombre = document.getElementById('swal-nombre').value.trim();
+            const precioTexto = document.getElementById('swal-precio').value;
+            const errorNombre = reglaNombre(nombre);
+            if (errorNombre) { mensajeValidacion(errorNombre); return false; }
+            const duplicado = productos.some(item => item.id !== producto.id && item.nombre.toLowerCase() === nombre.toLowerCase());
+            if (duplicado) { mensajeValidacion('Ya existe otro producto con ese nombre.'); return false; }
+            const errorPrecio = reglas.precio(precioTexto);
+            if (errorPrecio) { mensajeValidacion(errorPrecio); return false; }
+            return { nombre, precio: Number(parseFloat(precioTexto).toFixed(2)) };
+        }
+    });
+    if (!confirmado || !valor) return;
+    producto.nombre = valor.nombre;
+    producto.precio = valor.precio;
+    persistir();
+    toast(`"${producto.nombre}" actualizado.`);
+}
+
+async function eliminarProducto(producto) {
+    const acepto = await confirmar({
+        titulo: '¿Eliminar este producto?',
+        texto: `"${producto.nombre}" dejará de mostrarse en el menú público. Podrás volver a agregarlo desde "Añadir Producto".`,
+        icon: 'warning',
+        confirmText: 'Sí, eliminar'
+    });
+    if (!acepto) return;
+    productos = productos.filter(item => item.id !== producto.id);
+    persistir();
+    toast(`"${producto.nombre}" eliminado del menú.`, 'info');
+}
+
+function alternarVisibilidad(producto) {
+    producto.activo = producto.activo === false;
+    persistir();
+    toast(producto.activo ? `"${producto.nombre}" visible en el menú.` : `"${producto.nombre}" oculto del menú público.`, 'info');
+}
+
 function init() {
     if (!iniciarAdmin('admin-menu.html')) return;
     productos = leerProductosTodos();
     render();
 
+    const form = document.getElementById('form-add-product');
     const select = document.getElementById('new-prod-name');
     const precio = document.getElementById('new-prod-price');
     const error = document.getElementById('addProductError');
+    const modal = document.getElementById('modalAddProduct');
+
+    const reglaSeleccion = valor => (valor ? '' : 'Selecciona un platillo o bebida.');
+    vincularValidacion(select, reglaSeleccion);
+    vincularValidacion(precio, reglas.precio);
 
     select.addEventListener('change', () => {
         precio.value = select.selectedOptions[0]?.dataset.price || '';
+        if (precio.value) validarCampo(precio, reglas.precio);
+    });
+
+    // Al cerrar el modal se limpian los avisos de validación.
+    modal.addEventListener('hidden.bs.modal', () => {
+        form.reset();
+        limpiarCampo(select);
+        limpiarCampo(precio);
+        error.classList.add('d-none');
     });
 
     document.getElementById('admin-menu-grid').addEventListener('click', event => {
-        const eliminar = event.target.closest('.btn-action-delete');
-        const editar = event.target.closest('.btn-action-edit');
-        const id = (eliminar || editar)?.dataset.id;
-        const producto = productos.find(item => item.id === id);
+        const boton = event.target.closest('.btn-action-delete, .btn-action-edit, .btn-action-toggle');
+        if (!boton) return;
+        const producto = productos.find(item => item.id === boton.dataset.id);
         if (!producto) return;
 
-        if (eliminar && confirm(`¿Eliminar "${producto.nombre}" del menú público?`)) {
-            productos = productos.filter(item => item.id !== id);
-            persistir();
-        }
-        if (editar) {
-            const nombre = prompt('Editar nombre del producto:', producto.nombre)?.trim();
-            if (nombre) producto.nombre = nombre;
-            const nuevo = prompt('Editar precio ($):', producto.precio.toFixed(2));
-            if (nuevo !== null) {
-                if (precioValido(parseFloat(nuevo))) producto.precio = Number(parseFloat(nuevo).toFixed(2));
-                else alert('Ingresa un precio válido (mayor que 0).');
-            }
-            persistir();
-        }
+        if (boton.classList.contains('btn-action-delete')) eliminarProducto(producto);
+        else if (boton.classList.contains('btn-action-edit')) editarProducto(producto);
+        else alternarVisibilidad(producto);
     });
 
-    document.getElementById('form-add-product').addEventListener('submit', event => {
+    form.addEventListener('submit', event => {
         event.preventDefault();
         error.classList.add('d-none');
+
+        const seleccionValida = validarCampo(select, reglaSeleccion);
+        const precioValido = validarCampo(precio, reglas.precio);
+        if (!seleccionValida || !precioValido) {
+            enfocarPrimerError(form);
+            return;
+        }
+
         const base = PRODUCTOS_INICIALES.find(item => item.id === select.value);
-        const valor = parseFloat(precio.value);
-        if (!base || !precioValido(valor)) {
-            error.textContent = 'Selecciona un producto e ingresa un precio válido (mayor que 0).';
+        if (!base) {
+            error.textContent = 'No se encontró el producto seleccionado.';
             error.classList.remove('d-none');
             return;
         }
-        productos.push({ ...base, precio: Number(valor.toFixed(2)), activo: true });
+        productos.push({ ...base, precio: Number(parseFloat(precio.value).toFixed(2)), activo: true });
         persistir();
-        event.target.reset();
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAddProduct')).hide();
+        bootstrap.Modal.getOrCreateInstance(modal).hide();
+        toast(`"${base.nombre}" agregado al menú.`);
     });
 }
 
