@@ -334,3 +334,26 @@ body { padding-top: 0; }
     .map-placeholder img, .contact-icon { transition: none; }
     .map-placeholder:hover img, .d-flex:hover > .contact-icon { transform: none; }
 }
+
+/* ==========================================================================
+   Foro 1 · Paginación de la tabla de pedidos (admin-pedidos.html)
+   ========================================================================== */
+.pagination .page-link {
+    color: var(--se-primary);
+    border-color: var(--se-border);
+}
+
+.pagination .page-link:hover {
+    background: var(--se-primary-soft);
+    color: var(--se-primary-dark);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--se-primary);
+    border-color: var(--se-primary);
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--se-muted);
+}
