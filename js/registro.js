@@ -1,42 +1,36 @@
-function leerUsuarios() {
-    try {
-        const datos = JSON.parse(localStorage.getItem('saborExpressUsers'));
-        return Array.isArray(datos) ? datos : [];
-    } catch {
-        return [];
-    }
-}
+import { guardarSesion, leerUsuarios } from './saborexpress-data.js';
+import {
+    reglas,
+    validarCampo,
+    vincularValidacion,
+    enfocarPrimerError,
+    formatearTelefono,
+    pintarMedidorPassword
+} from './validaciones.js';
+import { mostrar } from './alertas.js';
+
+const CORREO_RESERVADO = 'admin@saborexpress.com';
 
 function guardarUsuarios(usuarios) {
     localStorage.setItem('saborExpressUsers', JSON.stringify(usuarios));
 }
 
-function guardarSesionCliente(usuario) {
-    localStorage.setItem('saborExpressSession', JSON.stringify({
-        name: usuario.name,
-        email: usuario.email,
-        role: 'cliente',
-        loginAt: new Date().toISOString()
-    }));
-}
-
-function mostrarError(mensaje) {
-    const box = document.getElementById('registroError');
-    box.textContent = mensaje;
-    box.classList.remove('d-none');
-}
-
-function ocultarError() {
-    document.getElementById('registroError').classList.add('d-none');
-}
-
-const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const REGEX_TELEFONO = /^(\+?503[\s-]?)?\d{4}[\s-]?\d{4}$/;
-
 function paginaDestino() {
     const redirect = new URLSearchParams(window.location.search).get('redirect');
     const valida = redirect && /^[a-zA-Z0-9_-]+\.html$/.test(redirect) && !redirect.startsWith('admin-');
     return valida ? redirect : 'mis-pedidos.html';
+}
+
+/** Regla del correo en el registro: formato válido, no reservado y no repetido. */
+function reglaCorreoDisponible(valor) {
+    const mensaje = reglas.correo(valor);
+    if (mensaje) return mensaje;
+    const correo = valor.trim().toLowerCase();
+    if (correo === CORREO_RESERVADO) return 'Ese correo está reservado. Usa otro.';
+    if (leerUsuarios().some(usuario => usuario.email === correo)) {
+        return 'Ya existe una cuenta con ese correo. Inicia sesión en su lugar.';
+    }
+    return '';
 }
 
 function init() {
@@ -46,56 +40,66 @@ function init() {
     const form = document.getElementById('registroForm');
     if (!form) return;
 
-    form.addEventListener('submit', (event) => {
+    const nombre = document.getElementById('registroNombre');
+    const correo = document.getElementById('registroCorreo');
+    const telefono = document.getElementById('registroTelefono');
+    const password = document.getElementById('registroPassword');
+    const confirmar = document.getElementById('registroConfirmar');
+    const medidor = document.getElementById('passwordMeter');
+
+    const reglaConfirmar = reglas.coincide(() => password.value);
+
+    vincularValidacion(nombre, reglas.nombre);
+    vincularValidacion(correo, reglaCorreoDisponible);
+    vincularValidacion(telefono, reglas.telefono);
+    vincularValidacion(password, reglas.passwordNueva);
+    vincularValidacion(confirmar, reglaConfirmar);
+
+    // Formato automático 7777-7777 mientras se escribe.
+    telefono.addEventListener('input', () => {
+        telefono.value = formatearTelefono(telefono.value);
+    });
+
+    // Barra de seguridad y revalidación de la confirmación al cambiar la contraseña.
+    password.addEventListener('input', () => {
+        pintarMedidorPassword(medidor, password.value);
+        if (confirmar.value) validarCampo(confirmar, reglaConfirmar);
+    });
+
+    form.addEventListener('submit', async event => {
         event.preventDefault();
-        ocultarError();
 
-        const nombre = document.getElementById('registroNombre').value.trim();
-        const correo = document.getElementById('registroCorreo').value.trim().toLowerCase();
-        const telefono = document.getElementById('registroTelefono').value.trim();
-        const password = document.getElementById('registroPassword').value;
-        const confirmar = document.getElementById('registroConfirmar').value;
-
-        if (!nombre || !correo || !password || !confirmar) {
-            mostrarError('Completa todos los campos obligatorios.');
-            return;
-        }
-        if (nombre.length < 3) {
-            mostrarError('Ingresa tu nombre completo.');
-            return;
-        }
-        if (!REGEX_CORREO.test(correo)) {
-            mostrarError('Ingresa un correo válido.');
-            return;
-        }
-        if (correo === 'admin@saborexpress.com') {
-            mostrarError('Ese correo está reservado. Usa otro.');
-            return;
-        }
-        if (telefono && !REGEX_TELEFONO.test(telefono)) {
-            mostrarError('Ingresa un teléfono válido de 8 dígitos (ej. 7777-7777).');
-            return;
-        }
-        if (password.length < 6) {
-            mostrarError('La contraseña debe tener al menos 6 caracteres.');
-            return;
-        }
-        if (password !== confirmar) {
-            mostrarError('Las contraseñas no coinciden.');
+        const resultados = [
+            validarCampo(nombre, reglas.nombre),
+            validarCampo(correo, reglaCorreoDisponible),
+            validarCampo(telefono, reglas.telefono),
+            validarCampo(password, reglas.passwordNueva),
+            validarCampo(confirmar, reglaConfirmar)
+        ];
+        if (resultados.includes(false)) {
+            enfocarPrimerError(form);
             return;
         }
 
+        const nuevoUsuario = {
+            name: nombre.value.trim(),
+            email: correo.value.trim().toLowerCase(),
+            phone: telefono.value.trim(),
+            password: password.value
+        };
         const usuarios = leerUsuarios();
-        if (usuarios.some(u => u.email === correo)) {
-            mostrarError('Ya existe una cuenta con ese correo. Inicia sesión con la contraseña que usaste al registrarte.');
-            return;
-        }
-
-        const nuevoUsuario = { name: nombre, email: correo, phone: telefono, password };
         usuarios.push(nuevoUsuario);
         guardarUsuarios(usuarios);
-        guardarSesionCliente(nuevoUsuario);
+        guardarSesion({ name: nuevoUsuario.name, email: nuevoUsuario.email, role: 'cliente' });
 
+        await mostrar({
+            icon: 'success',
+            title: '¡Cuenta creada!',
+            text: `Bienvenido a SaborExpress, ${nuevoUsuario.name.split(' ')[0]}.`,
+            timer: 1600,
+            timerProgressBar: true,
+            showConfirmButton: false
+        });
         window.location.href = paginaDestino();
     });
 }
