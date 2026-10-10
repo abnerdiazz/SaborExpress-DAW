@@ -407,3 +407,50 @@
     .admin-card, .admin-card-img { transition: none; }
     .admin-card:hover, .admin-card:hover .admin-card-img { transform: none; }
 }
+
+/* ==========================================================================
+   Foro 1 · Zona de cobertura del checkout
+   ========================================================================== */
+.zone-status {
+    border-radius: 10px;
+    font-size: .88rem;
+    font-weight: 600;
+    margin-top: .6rem;
+    padding: .6rem .85rem;
+}
+
+.zone-pending {
+    background: var(--se-bg, #FBF8F3);
+    border: 1px solid var(--se-border, #E9D8BF);
+    color: var(--se-muted, #746F69);
+}
+
+.zone-ok {
+    background: var(--se-green-soft, #E9F0EA);
+    border: 1px solid var(--se-green, #4F7058);
+    color: var(--se-green, #4F7058);
+}
+
+.zone-out {
+    background: #FBE6E2;
+    border: 1px solid #C0392B;
+    color: #A23D2F;
+}
+
+.btn-locate {
+    background: #fff;
+    border: 1px solid var(--se-primary, #CE4B31);
+    border-radius: 8px;
+    color: var(--se-primary, #CE4B31);
+    font-weight: 700;
+}
+
+.btn-locate:hover {
+    background: var(--se-primary, #CE4B31);
+    color: #fff;
+}
+
+/* Campos con error o correctos en el checkout */
+.checkout-input.is-invalid {
+    border-color: #C0392B;
+}

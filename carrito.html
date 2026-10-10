@@ -67,47 +67,13 @@
                                         <th class="pe-4">SUBTOTAL</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cart-table-body">
-                                    <tr class="cart-item" data-price="0.85">
-                                        <td class="ps-4 cart-product-title">Pupusa Revuelta (Maíz)</td>
-                                        <td class="text-center">
-                                            <div class="qty-pill-container">
-                                                <button type="button" class="qty-btn btn-minus">-</button>
-                                                <span class="qty-val">4</span>
-                                                <button type="button" class="qty-btn btn-plus">+</button>
-                                            </div>
-                                        </td>
-                                        <td class="cart-price-text">$0.85</td>
-                                        <td class="pe-4 cart-subtotal-text item-subtotal">$3.40</td>
-                                    </tr>
-                                    <tr class="cart-item" data-price="0.90">
-                                        <td class="ps-4 cart-product-title">Pupusa de Queso con Loroco (Arroz)</td>
-                                        <td class="text-center">
-                                            <div class="qty-pill-container">
-                                                <button type="button" class="qty-btn btn-minus">-</button>
-                                                <span class="qty-val">3</span>
-                                                <button type="button" class="qty-btn btn-plus">+</button>
-                                            </div>
-                                        </td>
-                                        <td class="cart-price-text">$0.90</td>
-                                        <td class="pe-4 cart-subtotal-text item-subtotal">$2.70</td>
-                                    </tr>
-                                    <tr class="cart-item" data-price="1.00">
-                                        <td class="ps-4 cart-product-title">Soda de Lata</td>
-                                        <td class="text-center">
-                                            <div class="qty-pill-container">
-                                                <button type="button" class="qty-btn btn-minus">-</button>
-                                                <span class="qty-val">2</span>
-                                                <button type="button" class="qty-btn btn-plus">+</button>
-                                            </div>
-                                        </td>
-                                        <td class="cart-price-text">$1.00</td>
-                                        <td class="pe-4 cart-subtotal-text item-subtotal">$2.00</td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="cart-table-body"></tbody>
                             </table>
                         </div>
                     </div>
+                    <button type="button" id="btn-vaciar-carrito" class="btn btn-link text-danger p-0 mt-3 d-none">
+                        <i class="bi bi-trash3 me-1"></i>Vaciar carrito
+                    </button>
                 </div>
 
                 <!-- Resumen de la orden -->
@@ -117,19 +83,19 @@
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span class="summary-label">Subtotal</span>
-                            <span class="summary-value" id="cart-subtotal">$8.10</span>
+                            <span class="summary-value" id="cart-subtotal">$0.00</span>
                         </div>
                         
                         <div class="d-flex justify-content-between mb-3">
                             <span class="summary-label">Envío fijo</span>
-                            <span class="summary-value" id="cart-shipping">$1.00</span>
+                            <span class="summary-value" id="cart-shipping">$0.00</span>
                         </div>
                         
                         <hr class="my-3" style="border-color: var(--se-border, #eae5df); opacity: 1;">
                         
                         <div class="d-flex justify-content-between mb-4 align-items-center">
                             <span class="summary-total-label">Total</span>
-                            <span class="summary-total-value" id="cart-total">$9.10</span>
+                            <span class="summary-total-value" id="cart-total">$0.00</span>
                         </div>
                         
                         <a href="checkout.html" class="btn-checkout-outline text-center text-decoration-none d-block">
