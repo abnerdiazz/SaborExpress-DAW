@@ -1,4 +1,13 @@
 import { obtenerPedidos, iniciarAdmin } from './saborexpress-data.js';
+import { aviso, confirmar, error as alertaError, mostrar, toast } from './alertas.js';
+import {
+    chartDisponible,
+    graficarCategorias,
+    graficarEstados,
+    graficarPedidosPorDia,
+    graficarVentas
+} from './reportes-graficas.js';
+import { contarDemo, eliminarDatosDemo, generarDatosDemo } from './reportes-demo.js';
 
 const state = {
     pedidos: [],
@@ -6,8 +15,10 @@ const state = {
     inicioPersonalizado: null,
     finPersonalizado: null,
     busqueda: '',
-    chart: null
+    dias: [] // fechas de la serie de ventas actual (para el detalle al hacer clic en una barra)
 };
+
+const ESTADOS = ['Pendiente', 'Preparando', 'En camino', 'Entregado', 'Cancelado'];
 
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value || 0));
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
@@ -37,13 +48,29 @@ function rangoActual() {
     return { inicio, fin };
 }
 
-function pedidosDelRango() {
+/** Pedidos dentro del rango. Las ventas no cuentan los cancelados; el gráfico de estados sí. */
+function pedidosEnRango({ incluirCancelados = false } = {}) {
     const { inicio, fin } = rangoActual();
     return state.pedidos.filter(pedido => {
         const fecha = new Date(pedido.creadoEn);
         const cancelado = String(pedido.estado).toLowerCase() === 'cancelado';
-        return fecha >= inicio && fecha <= fin && !cancelado;
+        return fecha >= inicio && fecha <= fin && (incluirCancelados || !cancelado);
     });
+}
+
+function normalizarEstado(valor) {
+    const texto = String(valor || '').toLowerCase();
+    if (texto.startsWith('prepar') || texto === 'en preparación') return 'Preparando';
+    if (texto === 'en camino') return 'En camino';
+    if (texto === 'entregado') return 'Entregado';
+    if (texto === 'cancelado') return 'Cancelado';
+    return 'Pendiente';
+}
+
+function contarPorEstado(pedidos) {
+    const conteos = Object.fromEntries(ESTADOS.map(estado => [estado, 0]));
+    pedidos.forEach(pedido => { conteos[normalizarEstado(pedido.estado)] += 1; });
+    return conteos;
 }
 
 function agrupar(pedidos) {
@@ -72,61 +99,27 @@ function agrupar(pedidos) {
     };
 }
 
-function construirSerieVentas(pedidos) {
+/** Serie diaria: ventas ($) y cantidad de pedidos por cada día del rango. */
+function construirSerieDiaria(pedidos) {
     const { inicio, fin } = rangoActual();
-    const labels = [];
-    const values = [];
+    const etiquetas = [];
+    const valores = [];
+    const cantidades = [];
+    const dias = [];
     const cursor = new Date(inicio);
+    const formatoCorto = state.rango <= 7 && !state.inicioPersonalizado ? { weekday: 'short' } : { day: '2-digit', month: 'short' };
 
     while (cursor <= fin) {
         const dayStart = inicioDia(cursor);
         const dayEnd = finDia(cursor);
-        labels.push(cursor.toLocaleDateString('es-SV', state.rango <= 7 && !state.inicioPersonalizado ? { weekday: 'short' } : { day: '2-digit', month: 'short' }).replace('.', ''));
-        values.push(pedidos
-            .filter(pedido => pedido.creadoEn >= dayStart && pedido.creadoEn <= dayEnd)
-            .reduce((sum, pedido) => sum + Number(pedido.total || 0), 0));
+        const delDia = pedidos.filter(pedido => pedido.creadoEn >= dayStart && pedido.creadoEn <= dayEnd);
+        etiquetas.push(cursor.toLocaleDateString('es-SV', formatoCorto).replace('.', ''));
+        valores.push(Number(delDia.reduce((sum, pedido) => sum + Number(pedido.total || 0), 0).toFixed(2)));
+        cantidades.push(delDia.length);
+        dias.push(new Date(dayStart));
         cursor.setDate(cursor.getDate() + 1);
     }
-    return { labels, values };
-}
-
-function renderChart(pedidos) {
-    const { labels, values } = construirSerieVentas(pedidos);
-    const ctx = document.getElementById('ventasChart');
-    if (state.chart) state.chart.destroy();
-
-    state.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Ventas',
-                data: values,
-                backgroundColor: '#CE4B31',
-                borderRadius: 5,
-                maxBarThickness: 30
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: { label: context => money(context.raw) }
-                }
-            },
-            scales: {
-                x: { grid: { display: false }, border: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    ticks: { callback: value => `$${value}` },
-                    grid: { color: '#F0E9DF' },
-                    border: { display: false }
-                }
-            }
-        }
-    });
+    return { etiquetas, valores, cantidades, dias };
 }
 
 function renderProductos(productos) {
@@ -160,8 +153,17 @@ function renderCategorias(categorias) {
     document.getElementById('reportNoResults').classList.toggle('d-none', visibles.length !== 0 || !query);
 }
 
+function actualizarBannerDemo() {
+    const cantidad = contarDemo();
+    document.getElementById('demoBanner')?.classList.toggle('d-none', cantidad === 0);
+    const texto = document.getElementById('demoBannerTexto');
+    if (texto) texto.textContent = `Se están mostrando ${cantidad} pedidos de demostración mezclados con los pedidos reales.`;
+    const quitar = document.getElementById('btnDemoQuitar');
+    if (quitar) quitar.disabled = cantidad === 0;
+}
+
 function render() {
-    const pedidos = pedidosDelRango();
+    const pedidos = pedidosEnRango();
     const ingresos = pedidos.reduce((sum, pedido) => sum + Number(pedido.total || 0), 0);
     const { productos, categorias } = agrupar(pedidos);
 
@@ -175,13 +177,67 @@ function render() {
         ? `(${inicio.toLocaleDateString('es-SV')} – ${fin.toLocaleDateString('es-SV')})`
         : state.rango === 7 ? '(Esta Semana)' : '(Último Mes)';
 
-    renderChart(pedidos);
+    // Mensaje "sin datos" sobre cada gráfica que corresponda.
+    const todosEnRango = pedidosEnRango({ incluirCancelados: true });
+    document.querySelectorAll('[data-empty="pedidos"]').forEach(nodo => nodo.classList.toggle('d-none', pedidos.length > 0));
+    document.querySelectorAll('[data-empty="estados"]').forEach(nodo => nodo.classList.toggle('d-none', todosEnRango.length > 0));
+
+    if (chartDisponible()) {
+        const serie = construirSerieDiaria(pedidos);
+        state.dias = serie.dias;
+        graficarVentas(document.getElementById('ventasChart'), { etiquetas: serie.etiquetas, valores: serie.valores }, mostrarDetalleDia);
+        graficarPedidosPorDia(document.getElementById('pedidosDiaChart'), { etiquetas: serie.etiquetas, cantidades: serie.cantidades });
+        graficarCategorias(document.getElementById('categoriasChart'), categorias);
+        graficarEstados(document.getElementById('estadosChart'), contarPorEstado(todosEnRango));
+    }
+
     renderProductos(productos);
     renderCategorias(categorias);
+    actualizarBannerDemo();
+}
+
+/** Clic en una barra de ventas: muestra los pedidos de ese día. */
+async function mostrarDetalleDia(indice) {
+    const dia = state.dias[indice];
+    if (!dia) return;
+    const inicio = inicioDia(dia);
+    const fin = finDia(dia);
+    const delDia = pedidosEnRango().filter(pedido => pedido.creadoEn >= inicio && pedido.creadoEn <= fin);
+    const titulo = dia.toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    if (!delDia.length) {
+        toast(`No hubo pedidos el ${titulo}.`, 'info');
+        return;
+    }
+
+    const total = delDia.reduce((sum, pedido) => sum + Number(pedido.total || 0), 0);
+    const filas = delDia
+        .sort((a, b) => a.creadoEn - b.creadoEn)
+        .map(pedido => `
+            <tr>
+                <td>#${esc(pedido.id)}</td>
+                <td>${pedido.creadoEn.toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit' })}</td>
+                <td>${esc(pedido.cliente || 'Cliente')}</td>
+                <td class="text-end">${money(pedido.total)}</td>
+            </tr>`).join('');
+
+    await mostrar({
+        title: titulo.charAt(0).toUpperCase() + titulo.slice(1),
+        html: `
+            <p class="mb-2"><strong>${delDia.length}</strong> pedido(s) · <strong>${money(total)}</strong> en ventas</p>
+            <div style="max-height:260px;overflow:auto;text-align:left">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>ID</th><th>Hora</th><th>Cliente</th><th class="text-end">Total</th></tr></thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </div>`,
+        confirmButtonText: 'Cerrar',
+        width: 560
+    });
 }
 
 function exportarCsv() {
-    const pedidos = pedidosDelRango();
+    const pedidos = pedidosEnRango();
     const { categorias } = agrupar(pedidos);
     const rows = [['Categoría', 'Ordenado (cant.)', 'Total recaudado'], ...categorias.map(item => [item.categoria, item.cantidad, item.ingreso.toFixed(2)])];
     const csv = rows.map(row => row.map(cell => `"${String(cell).replaceAll('"', '""')}"`).join(',')).join('\n');
@@ -192,10 +248,46 @@ function exportarCsv() {
     link.download = `reporte-saborexpress-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    toast('Reporte CSV descargado.');
+}
+
+async function recargarPedidos() {
+    const { datos } = await obtenerPedidos();
+    state.pedidos = datos;
+    render();
+}
+
+async function generarDemo() {
+    const aceptar = await confirmar({
+        titulo: '¿Generar datos de demostración?',
+        texto: 'Se agregarán 45 pedidos de ejemplo de los últimos 30 días. Tus pedidos reales no se modifican y podrás quitar los de ejemplo cuando quieras.',
+        confirmText: 'Generar datos'
+    });
+    if (!aceptar) return;
+    const creados = generarDatosDemo(45);
+    await recargarPedidos();
+    toast(`Se generaron ${creados} pedidos de demostración.`);
+}
+
+async function quitarDemo() {
+    const aceptar = await confirmar({
+        titulo: '¿Quitar los datos de demostración?',
+        texto: 'Solo se eliminarán los pedidos de ejemplo. Los pedidos reales se conservan.',
+        icon: 'warning',
+        confirmText: 'Sí, quitar'
+    });
+    if (!aceptar) return;
+    const quitados = eliminarDatosDemo();
+    await recargarPedidos();
+    toast(`Se quitaron ${quitados} pedidos de demostración.`, 'info');
 }
 
 async function init() {
     if (!iniciarAdmin('admin-reportes.html')) return;
+
+    if (!chartDisponible()) {
+        await alertaError('No se pudieron cargar las gráficas', 'Revisa tu conexión a internet y recarga la página.');
+    }
 
     try {
         const { datos, origen } = await obtenerPedidos();
@@ -204,11 +296,7 @@ async function init() {
         render();
     } catch (error) {
         console.error(error);
-        const aviso = document.createElement('p');
-        aviso.className = 'alert alert-danger';
-        aviso.setAttribute('role', 'alert');
-        aviso.textContent = 'No se pudieron leer los pedidos guardados. Revisa el almacenamiento del navegador.';
-        document.querySelector('main').prepend(aviso);
+        await alertaError('No se pudieron leer los pedidos', 'Revisa el almacenamiento del navegador.');
     }
 
     document.querySelectorAll('[data-range]').forEach(button => button.addEventListener('click', () => {
@@ -226,6 +314,7 @@ async function init() {
         const feedback = document.getElementById('rangeFeedback');
         if (!inicio || !fin || inicio > fin) {
             feedback.classList.remove('d-none');
+            aviso('Rango de fechas no válido', 'Elige una fecha inicial y una final, y que la inicial no sea posterior a la final.');
             return;
         }
         feedback.classList.add('d-none');
@@ -241,7 +330,13 @@ async function init() {
         render();
     });
     document.getElementById('exportReportCsv').addEventListener('click', exportarCsv);
+    document.getElementById('btnDemoGenerar')?.addEventListener('click', generarDemo);
+    document.getElementById('btnDemoQuitar')?.addEventListener('click', quitarDemo);
 
+    // Si se confirma un pedido en otra pestaña, el reporte se actualiza solo.
+    window.addEventListener('storage', evento => {
+        if (evento.key === 'saborExpressPedidos') recargarPedidos();
+    });
 }
 
 document.addEventListener('DOMContentLoaded', init);
