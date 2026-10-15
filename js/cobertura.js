@@ -1,14 +1,4 @@
-/**
- * cobertura.js
- * ---------------------------------------------------------------------------
- * Zona de cobertura del negocio (Etapa 1, punto 6): SaborExpress solo entrega
- * dentro de un radio fijo alrededor del local, con tarifa de envío fija.
- *
- * Funciones puras (no tocan el DOM ni el mapa), por eso se pueden probar solas.
- * ---------------------------------------------------------------------------
- */
-
-/** Ubicación del local (aproximada: Colonia Escalón, San Salvador). Ajustar si cambia la dirección. */
+/** Ubicación del local (aproximada: Colonia Escalón, San Salvador). */
 export const NEGOCIO = { lat: 13.7006, lng: -89.2406, nombre: 'SaborExpress' };
 
 /** Radio máximo de entrega, en kilómetros. */

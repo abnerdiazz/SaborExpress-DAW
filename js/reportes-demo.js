@@ -1,15 +1,3 @@
-/**
- * reportes-demo.js
- * ---------------------------------------------------------------------------
- * Datos de demostración para el panel de reportes.
- *
- * Los pedidos reales nacen "hoy", así que sin historial las gráficas se ven
- * casi vacías. Este módulo agrega pedidos de ejemplo repartidos en los últimos
- * 30 días. Quedan identificados con el correo demo@saborexpress.com y se
- * pueden eliminar con un clic sin tocar ningún pedido real.
- * ---------------------------------------------------------------------------
- */
-
 import { PRODUCTOS_INICIALES } from './saborexpress-data.js';
 
 const CLAVE_PEDIDOS = 'saborExpressPedidos';

@@ -1,12 +1,3 @@
-/**
- * compra-utils.js
- * ---------------------------------------------------------------------------
- * Constantes y funciones pequeñas que comparten el Menú, el Carrito y el
- * Checkout. Tenerlas en un solo lugar evita que cada página repita (y cambie
- * por su cuenta) la tarifa de envío o el límite por producto.
- * ---------------------------------------------------------------------------
- */
-
 /** Tarifa fija de envío dentro de la zona de cobertura (ver Etapa 1, punto 6). */
 export const ENVIO = 1.00;
 
