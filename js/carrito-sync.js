@@ -1,14 +1,3 @@
-/**
- * carrito-sync.js
- * ---------------------------------------------------------------------------
- * Mantiene el carrito al día con el menú. Si el administrador oculta o elimina
- * un producto, o le cambia el precio, mientras alguien ya lo tenía en su carrito:
- *   - los productos que ya no están disponibles se quitan del carrito;
- *   - los precios se actualizan al precio vigente del menú.
- * Devuelve qué cambió para poder avisarle a la persona.
- * ---------------------------------------------------------------------------
- */
-
 import { obtenerProductos, leerCarrito, guardarCarrito } from './saborexpress-data.js';
 
 export async function sincronizarCarritoConMenu() {

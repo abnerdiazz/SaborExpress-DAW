@@ -1,19 +1,3 @@
-/**
- * alertas.js
- * ---------------------------------------------------------------------------
- * Capa de diálogos de SaborExpress basada en SweetAlert2.
- *
- * - SweetAlert2 se carga desde el CDN la primera vez que hace falta, así que
- *   ninguna página necesita agregar un <script> adicional.
- * - Si no hay conexión con el CDN, todas las funciones usan los cuadros
- *   nativos del navegador (alert/confirm) para que la app nunca se rompa.
- * - Todas las funciones devuelven promesas: se usan con `await`.
- *
- * Nota de seguridad: cuando se pase `html`, quien llama debe escapar los datos
- * del usuario (ver esc() en compra-utils.js).
- * ---------------------------------------------------------------------------
- */
-
 const SWAL_URL = 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js';
 const COLOR_PRIMARIO = '#CE4B31';   // --se-primary
 const COLOR_SECUNDARIO = '#746F69'; // --se-muted
@@ -124,7 +108,7 @@ export async function formulario({ titulo, html, confirmText = 'Guardar', cancel
     return { confirmado: Boolean(resultado.isConfirmed), valor: resultado.value ?? null };
 }
 
-/** Muestra un error dentro del cuadro abierto (úsalo dentro de preConfirm). */
+/** Muestra un error dentro del cuadro abierto */
 export function mensajeValidacion(texto) {
     if (window.Swal) window.Swal.showValidationMessage(texto);
 }

@@ -1,20 +1,3 @@
-/**
- * validaciones.js
- * ---------------------------------------------------------------------------
- * Validación de formularios de SaborExpress.
- *
- * Dos partes:
- *   1. `reglas`: funciones puras. Reciben el valor y devuelven un mensaje de
- *      error, o '' si el valor es válido. No tocan el DOM (se pueden probar solas).
- *   2. Ayudas de interfaz: marcan el campo con las clases is-invalid / is-valid
- *      de Bootstrap y muestran el mensaje debajo del campo.
- *
- * Uso típico:
- *   vincularValidacion(input, reglas.correo);   // valida al salir del campo y mientras se corrige
- *   if (!validarCampo(input, reglas.correo)) ...  // al enviar el formulario
- * ---------------------------------------------------------------------------
- */
-
 export const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const REGEX_TELEFONO = /^(\+?503[\s-]?)?\d{4}[\s-]?\d{4}$/;
 export const REGEX_NOMBRE = /^[\p{L}][\p{L}\s'.-]{2,59}$/u;

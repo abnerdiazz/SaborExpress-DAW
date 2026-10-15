@@ -2,7 +2,7 @@
  * comprobante.js
  * ---------------------------------------------------------------------------
  * Genera el comprobante del pedido en PDF con jsPDF. La librería se carga
- * desde el CDN solo cuando se pide el comprobante (no pesa en el resto del sitio).
+ * desde el CDN solo cuando se pide el comprobante.
  * ---------------------------------------------------------------------------
  */
 

@@ -1,14 +1,3 @@
-/**
- * reportes-graficas.js
- * ---------------------------------------------------------------------------
- * Gráficas del panel de reportes, hechas con Chart.js 4.
- *
- * Cada función crea la gráfica la primera vez y, en las siguientes llamadas
- * (por ejemplo al cambiar el rango de fechas), solo actualiza sus datos: así
- * Chart.js anima la transición en lugar de redibujar todo desde cero.
- * ---------------------------------------------------------------------------
- */
-
 const PALETA = ['#CE4B31', '#4F7058', '#E2A33B', '#746F69', '#B83D27', '#9CB8A0'];
 
 export const COLORES_ESTADO = {
