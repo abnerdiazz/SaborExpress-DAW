@@ -1,4 +1,6 @@
 import { obtenerProductos, iniciarNavbar, leerSesion, leerCarrito, guardarCarrito } from './saborexpress-data.js';
+import { MAX_POR_PRODUCTO, money, esc } from './compra-utils.js';
+import { mostrar, toast } from './alertas.js';
 
 const state = {
     productos: [],
@@ -8,17 +10,6 @@ const state = {
     porPagina: 6,
     cantidades: new Map()
 };
-
-const money = value => `$${Number(value || 0).toFixed(2)}`;
-const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
-
-function mostrarToast(mensaje, html = false) {
-    const toastEl = document.getElementById('menuToast');
-    if (!toastEl || !window.bootstrap) return;
-    const cuerpo = toastEl.querySelector('[data-toast-message]');
-    if (html) cuerpo.innerHTML = mensaje; else cuerpo.textContent = mensaje;
-    bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 }).show();
-}
 
 function productosFiltrados() {
     const query = state.busqueda.toLowerCase();
@@ -94,36 +85,64 @@ function cambiarCantidad(id, delta) {
     if (node) node.textContent = nueva;
 }
 
-function agregarAlCarrito(id) {
+/** Pide iniciar sesión (o crear cuenta) a quien aún no la tiene. */
+async function pedirCuenta() {
+    const resultado = await mostrar({
+        icon: 'info',
+        title: 'Necesitas una cuenta',
+        text: 'Para hacer un pedido inicia sesión o crea una cuenta gratis.',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Iniciar sesión',
+        denyButtonText: 'Crear cuenta',
+        cancelButtonText: 'Ahora no'
+    });
+    if (resultado.isConfirmed) window.location.href = 'login.html?redirect=menu.html';
+    else if (resultado.isDenied) window.location.href = 'registro.html?redirect=menu.html';
+}
+
+async function agregarAlCarrito(id) {
     const producto = state.productos.find(item => item.id === id);
     if (!producto) return;
 
     // Solo un cliente con cuenta puede hacer pedidos.
-    const sesion = leerSesion();
-    if (!sesion) {
-        mostrarToast('Para hacer un pedido necesitas una cuenta. <a href="login.html?redirect=menu.html" class="fw-bold">Inicia sesión</a> o <a href="registro.html?redirect=menu.html" class="fw-bold">crea una cuenta</a>.', true);
+    if (!leerSesion()) {
+        await pedirCuenta();
         return;
     }
+
     const cantidad = cantidadSeleccionada(id);
     const carrito = leerCarrito();
     const existente = carrito.find(item => item.productoId === id);
-    if (existente) existente.cantidad += cantidad;
+    const actual = existente ? existente.cantidad : 0;
+    const nueva = Math.min(MAX_POR_PRODUCTO, actual + cantidad);
+
+    if (nueva === actual) {
+        toast(`Máximo ${MAX_POR_PRODUCTO} unidades de "${producto.nombre}" por pedido.`, 'warning', 3500);
+        return;
+    }
+
+    if (existente) existente.cantidad = nueva;
     else carrito.push({
         productoId: producto.id,
         nombre: producto.nombre,
         precio: producto.precio,
         imagen: producto.imagen,
         categoria: producto.categoria,
-        cantidad
+        cantidad: nueva
     });
+
     try {
         guardarCarrito(carrito);
     } catch (error) {
         console.error(error);
-        mostrarToast('No se pudo guardar el carrito. Revisa el almacenamiento del navegador.');
+        toast('No se pudo guardar el carrito. Revisa el almacenamiento del navegador.', 'error', 4000);
         return;
     }
-    mostrarToast(`${cantidad} × ${producto.nombre} agregado al carrito.`);
+
+    const agregadas = nueva - actual;
+    const recortado = agregadas < cantidad ? ` (tope de ${MAX_POR_PRODUCTO} por pedido)` : '';
+    toast(`${agregadas} × ${producto.nombre} agregado al carrito${recortado}.`);
 }
 
 async function init() {
