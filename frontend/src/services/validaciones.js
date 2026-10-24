@@ -1,0 +1,120 @@
+/**
+ * validaciones.js
+ * ---------------------------------------------------------------------------
+ * Reglas de validación de los formularios de SaborExpress.
+ *
+ * Son funciones puras: reciben el valor y devuelven un mensaje de error, o ''
+ * si el valor es válido. No tocan la pantalla, por eso se pueden probar solas
+ * y las usan todos los formularios (hook useCampo + componente FormField).
+ * ---------------------------------------------------------------------------
+ */
+
+export const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+export const REGEX_TELEFONO = /^(\+?503[\s-]?)?\d{4}[\s-]?\d{4}$/;
+export const REGEX_NOMBRE = /^[\p{L}][\p{L}\s'.-]{2,59}$/u;
+
+const limpio = valor => String(valor ?? '').trim();
+
+export const esCorreoValido = valor => REGEX_CORREO.test(limpio(valor));
+export const esTelefonoValido = valor => REGEX_TELEFONO.test(limpio(valor));
+export const esNombreValido = valor => REGEX_NOMBRE.test(limpio(valor));
+
+/** Convierte lo que se escribe en el formato 7777-7777 (acepta +503 al inicio). */
+export function formatearTelefono(valor) {
+    let digitos = String(valor ?? '').replace(/\D/g, '');
+    // El prefijo del país (503) solo se quita cuando sobran dígitos: un número local de 8 dígitos no se toca.
+    if (digitos.length > 8 && digitos.startsWith('503')) digitos = digitos.slice(3);
+    digitos = digitos.slice(0, 8);
+    return digitos.length > 4 ? `${digitos.slice(0, 4)}-${digitos.slice(4)}` : digitos;
+}
+
+/**
+ * Evalúa qué tan segura es una contraseña (0 a 4) y si cumple el mínimo
+ * exigido al registrarse: 8 caracteres, con al menos una letra y un número.
+ */
+export function evaluarPassword(password) {
+    const texto = String(password ?? '');
+    const reglasPassword = {
+        longitud: texto.length >= 8,
+        letra: /[A-Za-z]/.test(texto),
+        numero: /\d/.test(texto),
+        mayuscula: /[A-Z]/.test(texto),
+        simbolo: /[^A-Za-z0-9]/.test(texto)
+    };
+    let puntaje = 0;
+    if (reglasPassword.longitud) puntaje += 1;
+    if (reglasPassword.letra && reglasPassword.numero) puntaje += 1;
+    if (reglasPassword.mayuscula) puntaje += 1;
+    if (reglasPassword.simbolo || texto.length >= 12) puntaje += 1;
+    const etiquetas = ['Muy débil', 'Débil', 'Aceptable', 'Buena', 'Fuerte'];
+    return {
+        puntaje,
+        etiqueta: etiquetas[puntaje],
+        valida: reglasPassword.longitud && reglasPassword.letra && reglasPassword.numero,
+        reglas: reglasPassword
+    };
+}
+
+/* ------------------------------------------------------------------------- */
+/* Reglas: devuelven '' si es válido, o el mensaje de error                    */
+/* ------------------------------------------------------------------------- */
+export const reglas = {
+    nombre(valor) {
+        const texto = limpio(valor);
+        if (!texto) return 'Ingresa tu nombre completo.';
+        if (!esNombreValido(texto)) return 'Usa solo letras y espacios (entre 3 y 60 caracteres).';
+        return '';
+    },
+    correo(valor) {
+        const texto = limpio(valor);
+        if (!texto) return 'Ingresa tu correo electrónico.';
+        if (!esCorreoValido(texto)) return 'Escribe un correo válido, por ejemplo nombre@correo.com.';
+        return '';
+    },
+    telefono(valor) {
+        const texto = limpio(valor);
+        if (!texto) return 'Ingresa tu teléfono.';
+        if (!esTelefonoValido(texto)) return 'Escribe 8 dígitos, por ejemplo 7777-7777.';
+        return '';
+    },
+    telefonoOpcional(valor) {
+        return limpio(valor) ? reglas.telefono(valor) : '';
+    },
+    passwordNueva(valor) {
+        const texto = String(valor ?? '');
+        if (!texto) return 'Crea una contraseña.';
+        if (!evaluarPassword(texto).valida) return 'Mínimo 8 caracteres, con al menos una letra y un número.';
+        return '';
+    },
+    passwordLogin(valor) {
+        return String(valor ?? '') ? '' : 'Ingresa tu contraseña.';
+    },
+    coincide(valorOriginal) {
+        return valor => {
+            if (!String(valor ?? '')) return 'Repite la contraseña.';
+            return valor === valorOriginal() ? '' : 'Las contraseñas no coinciden.';
+        };
+    },
+    texto(etiqueta, min, max) {
+        return valor => {
+            const texto = limpio(valor);
+            if (!texto) return `Ingresa ${etiqueta}.`;
+            if (texto.length < min) return `Escribe al menos ${min} caracteres.`;
+            if (texto.length > max) return `Máximo ${max} caracteres.`;
+            return '';
+        };
+    },
+    textoOpcional(max) {
+        return valor => (limpio(valor).length > max ? `Máximo ${max} caracteres.` : '');
+    },
+    precio(valor) {
+        const numero = Number(valor);
+        if (String(valor ?? '').trim() === '' || !Number.isFinite(numero)) return 'Ingresa un precio válido.';
+        if (numero <= 0) return 'El precio debe ser mayor que 0.';
+        if (numero > 99) return 'El precio máximo es $99.00.';
+        return '';
+    }
+};
+
+/** Colores y etiquetas del medidor de seguridad de la contraseña. */
+export const COLORES_PASSWORD = ['#C0392B', '#E67E22', '#E2A33B', '#7FB069', '#2E7D32'];
