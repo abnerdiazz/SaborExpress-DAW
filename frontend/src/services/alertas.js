@@ -13,8 +13,7 @@ const BASE = {
   confirmButtonColor: COLOR_PRIMARIO,
   cancelButtonColor: '#746F69',
   denyButtonColor: '#4F7058',
-  reverseButtons: true,
-  focusConfirm: true
+  reverseButtons: true
 };
 
 export const mostrar = opciones => Swal.fire({ ...BASE, ...opciones });
