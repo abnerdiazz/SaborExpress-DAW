@@ -6,6 +6,19 @@ La idea principal del sistema es permitir a un cliente navegar el catálogo, ele
 
 ---
 
+## 🔗 Enlaces del proyecto
+
+El repositorio contiene **dos versiones** del sitio: la del Foro 1 (HTML, CSS y JavaScript, en las carpetas de la raíz) y la aplicación React del Foro 2 (carpeta `frontend/`).
+
+| Entrega | Sitio publicado | Video de demostración |
+| --- | --- | --- |
+| Foro 1: HTML, CSS y JavaScript | [Abrir sitio](https://abnerdiazz.github.io/SaborExpress-DAW/) | [Ver video](https://drive.google.com/file/d/1TDZSLtAe6zYHCqH77WyTOrAhEAmyjyy2/view) |
+| Foro 2: aplicación React | [Abrir sitio](https://saborexpress-react.netlify.app/) | [Ver video](https://drive.google.com/file/d/1_i5_3z2qiql3eq87jH1KtFvsDlK6kHYL/view?usp=drive_link) |
+
+Documentos de investigación (formato APA 7): [Foro 1: librerías de JavaScript](docs/Investigacion-Librerias-Foro1.pdf) · [Foro 2: React y la API Nominatim](docs/Investigacion-React-Foro2.pdf)
+
+---
+
 ## ✨ Descripción general del proyecto
 
 El sitio se compone de varias páginas funcionales que simulan un flujo real de compra en una pupusería:
@@ -19,6 +32,7 @@ El sitio se compone de varias páginas funcionales que simulan un flujo real de 
 - Área de reportes con gráficas interactivas para analizar la operación.
 - Diálogos de confirmación y avisos con SweetAlert2, validación de formularios campo por campo y comprobante de pedido en PDF.
 - Zona de cobertura de entregas sobre un mapa interactivo.
+- Aplicación React (Foro 2) que consume una API externa real (Nominatim), con estado global, componentes reutilizables y 163 pruebas automáticas.
 
 El enfoque del proyecto no fue crear un backend real, sino presentar una solución frontend completa con almacenamiento local mediante `localStorage`, lo cual permite simular persistencia de datos sin necesidad de una base de datos o servidor externo.
 
@@ -64,14 +78,25 @@ El proyecto se desarrolló principalmente con tecnologías web estándar:
 - SweetAlert2 11 para los diálogos de confirmación, avisos y formularios emergentes.
 - jsPDF 2.5 para generar el comprobante del pedido en PDF.
 
-No se empleó un framework de interfaz ni una arquitectura backend, ya que el objetivo de esta etapa era enfocarse en la lógica del front-end y la experiencia del usuario. Las librerías externas se cargan desde CDN; SweetAlert2 y jsPDF se cargan solo cuando se necesitan y, si no hay conexión, la aplicación usa los cuadros nativos del navegador.
+En el sitio del Foro 1 no se empleó un framework de interfaz ni una arquitectura backend, ya que el objetivo de esa etapa era enfocarse en la lógica del front-end y la experiencia del usuario. Las librerías externas se cargan desde CDN; SweetAlert2 y jsPDF se cargan solo cuando se necesitan y, si no hay conexión, la aplicación usa los cuadros nativos del navegador.
+
+### Aplicación React (Foro 2)
+
+- React 19 y Vite para la interfaz y las herramientas de desarrollo.
+- React Router para la navegación y las rutas protegidas por rol.
+- Context API y hooks propios para el estado global (sesión, catálogo, carrito y pedidos).
+- react-chartjs-2 (Chart.js) para las gráficas y react-leaflet (Leaflet) para el mapa.
+- SweetAlert2, jsPDF, Bootstrap 5 y Bootstrap Icons como paquetes npm, sin depender de un CDN.
+- API Nominatim (OpenStreetMap) para buscar direcciones y obtener la dirección de un punto del mapa.
+- Vitest y React Testing Library para las pruebas automáticas.
+- Netlify para la publicación.
 
 ---
 
 ## 📁 Estructura del proyecto
 
 ```text
-Etapa-2-DAW/
+SaborExpress-DAW/
 ├── admin-menu.html
 ├── admin-pedidos.html
 ├── admin-reportes.html
@@ -92,7 +117,8 @@ Etapa-2-DAW/
 │   ├── login-mispedidos.css
 │   └── menu-reportes.css
 ├── docs/
-│   └── Investigacion-Librerias-Foro1.pdf
+│   ├── Investigacion-Librerias-Foro1.pdf
+│   └── Investigacion-React-Foro2.pdf
 ├── img/
 │   ├── capturas/
 │   ├── comida/
@@ -121,6 +147,20 @@ Etapa-2-DAW/
 │   ├── reportes-graficas.js   (gráficas Chart.js)
 │   ├── saborexpress-data.js   (acceso a datos, sesiones y navbar)
 │   └── validaciones.js        (reglas de validación reutilizables)
+├── frontend/                  (Foro 2: aplicación React con Vite)
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── public/                (_redirects e img/)
+│   └── src/
+│       ├── pages/             (una pantalla por ruta)
+│       ├── components/        (piezas reutilizables, por módulo)
+│       ├── context/           (estado global)
+│       ├── hooks/             (hooks propios)
+│       ├── services/          (lógica sin React y cliente de la API)
+│       ├── styles/
+│       └── test/              (163 pruebas automáticas)
+├── netlify.toml               (configuración de publicación en Netlify)
 └── README.md
 ```
 
@@ -200,9 +240,9 @@ Los clientes se registran desde `registro.html` (contraseña de mínimo 8 caract
 
 ## ▶️ Cómo ejecutar el proyecto
 
-Como es un proyecto estático, no requiere instalación compleja.
+Hay dos versiones: la del Foro 1 es estática y no requiere instalación, y la del Foro 2 usa Node.js.
 
-### Con Live Server (recomendado)
+### Sitio del Foro 1: con Live Server (recomendado)
 
 1. Abre la carpeta del proyecto en Visual Studio Code.
 2. Instala la extensión **Live Server**.
@@ -210,9 +250,19 @@ Como es un proyecto estático, no requiere instalación compleja.
 
 > El proyecto usa módulos de JavaScript (`type="module"`), por lo que **no funciona abriendo el HTML con doble clic** (`file://`): debe servirse desde un servidor local o desde el sitio publicado. Se necesita conexión a internet para cargar Bootstrap y las librerías.
 
-**Sitio publicado (GitHub Pages):** [text](https://abnerdiazz.github.io/SaborExpress-DAW/)
+### Aplicación React (Foro 2)
 
-**Video de demostración:** [text](https://drive.google.com/file/d/1TDZSLtAe6zYHCqH77WyTOrAhEAmyjyy2/view?usp=drive_link)
+Requiere Node.js 20.19 o superior. Desde la raíz del repositorio:
+
+```
+cd frontend
+npm install
+npm run dev      # http://localhost:5173
+npm test         # 163 pruebas automáticas
+npm run build    # versión de producción en frontend/dist
+```
+
+Los enlaces de los sitios publicados y de los videos están en la sección **Enlaces del proyecto**, al inicio de este documento.
 
 ---
 
@@ -230,7 +280,77 @@ Extras de experiencia de usuario: los paneles se actualizan solos cuando otra pe
 
 ---
 
-## 📸 Capturas
+## ⚛️ Foro 2: aplicación React con API externa
+
+En el Foro 2 el sitio se reconstruyó como una aplicación de una sola página con **React 19** y **Vite**, dentro de la carpeta `frontend/`. El sitio del Foro 1 se conserva sin cambios. Las reglas de negocio se mantienen: envío fijo de $1.00, zona de entrega de 5 km, tope de 20 unidades por producto, estados finales de pedido y dos sesiones independientes (cliente y administrador).
+
+### Qué pide el Foro 2 y cómo se cumple
+
+| Requerimiento | Cómo se cumple | Dónde |
+| --- | --- | --- |
+| Framework JavaScript integrado | React 19 con Vite: doce pantallas y más de veinte componentes reutilizables | `frontend/src/pages`, `frontend/src/components` |
+| API externa con datos reales | Nominatim (OpenStreetMap): busca una dirección escrita y obtiene la dirección del punto marcado en el mapa. Una consulta por segundo, caché, tiempo máximo, cancelación y mensajes de error | `frontend/src/services/nominatim.js`, `frontend/src/hooks/useGeocodificacion.js` |
+| Manejo de estado | Context API (sesión, catálogo, carrito y pedidos) y un hook que mantiene sincronizadas las pestañas del navegador | `frontend/src/context`, `frontend/src/hooks/useStoredValue.js` |
+| Componentes reutilizables | Formularios con validación, modal, paginación, barras de navegación, gráficas y mapa | `frontend/src/components` |
+| Módulos secundarios | Contacto, Nosotros, Mis pedidos, Reportes y los paneles del administrador | `frontend/src/pages` |
+| Pruebas | 163 pruebas con Vitest y Testing Library | `frontend/src/test` |
+| Documento de investigación (APA 7) | Explica React, la arquitectura, el estado, la API y las pruebas | `docs/Investigacion-React-Foro2.pdf` |
+
+### Estructura de `frontend/src`
+
+| Carpeta | Contenido |
+| --- | --- |
+| `pages/` | Una pantalla por ruta (tienda, cuenta y panel de administración) |
+| `components/` | Piezas reutilizables, agrupadas por módulo |
+| `context/` | Estado global: sesión, catálogo, carrito y pedidos |
+| `hooks/` | Hooks propios: almacenamiento reactivo, campos de formulario, paginación y geocodificación |
+| `services/` | Lógica sin React: validaciones, pedidos, reportes, cobertura, comprobante PDF y cliente de la API |
+| `styles/` | Estilos del sitio |
+| `test/` | Pruebas automáticas |
+
+### API externa: Nominatim
+
+En el checkout, al escribir una dirección y pulsar el botón de buscar, la aplicación consulta Nominatim y muestra hasta cinco sugerencias; al elegir una, el pin del mapa se mueve a esa ubicación. Al mover el pin, la aplicación obtiene la dirección de ese punto y la ofrece para el campo de entrega. Respeta la política de uso del servicio (una consulta por segundo y sin autocompletado) y, si la API falla, muestra un mensaje claro y la persona puede escribir la dirección a mano.
+
+### Capturas de la aplicación React
+
+#### Menú público
+
+Búsqueda, filtro por categoría, paginación y tope de 20 unidades por producto.
+
+![Menú público de la aplicación React](img/capturas/react-menu.png)
+
+#### Registro con validaciones
+
+Validación por campo, formato automático del teléfono y medidor de seguridad de la contraseña.
+
+![Registro con errores de validación y medidor de contraseña](img/capturas/react-registro.png)
+
+#### Checkout con la API Nominatim
+
+Mapa con la zona de cobertura y la dirección detectada por la API al marcar un punto.
+
+![Checkout con la dirección detectada por la API Nominatim](img/capturas/react-checkout-api.png)
+
+#### Panel de pedidos del administrador
+
+Filtros por estado, paginación y confirmación de los estados finales.
+
+![Panel de pedidos del administrador](img/capturas/react-admin-pedidos.png)
+
+#### Reportes
+
+Cuatro gráficas con react-chartjs-2, detalle por día y exportación a CSV.
+
+![Panel de reportes con las cuatro gráficas](img/capturas/react-reportes.png)
+
+#### Aplicación publicada en Netlify
+
+![Aplicación publicada en Netlify](img/capturas/react-netlify.png)
+
+---
+
+## 📸 Capturas del sitio del Foro 1
 
 Las siguientes imágenes muestran las vistas principales del sistema, tanto del lado del cliente como del panel administrativo, en escritorio y en móvil.
 
@@ -340,12 +460,14 @@ Panel con indicadores, gráfica de ventas por día, pedidos por día, ingresos p
 - La navegación y los formularios están diseñados para funcionar en un ambiente estático.
 - El proyecto está orientado a una experiencia de compra simple y clara, pensada para entregar un demo funcional de negocio digital.
 - Al usar `localStorage`, los datos viven en cada navegador y no se comparten entre dispositivos; la sincronización entre pestañas del mismo navegador sí funciona. La base de datos en la nube corresponde a una etapa posterior.
+- La aplicación React del Foro 2 también guarda los datos en `localStorage`; la sincronización entre pestañas del mismo navegador funciona, pero los datos no se comparten entre dispositivos. La base de datos en la nube queda para la entrega final.
+- La API Nominatim es un servicio público: puede limitar las consultas o no estar disponible, y por eso la aplicación maneja esos errores y permite escribir la dirección a mano.
 - La autenticación es simulada: las contraseñas se guardan sin cifrar en `localStorage` y las credenciales del administrador están en el código. Es válido para esta demostración, pero no para producción.
 
 ---
 
 ## ✅ Estado del proyecto
 
-El proyecto se encuentra desarrollado como una propuesta funcional, con navegación completa, catálogo, carrito, autenticación, gestión administrativa y flujo de pedidos en un entorno frontend estático.
+El proyecto se encuentra desarrollado como una propuesta funcional, con navegación completa, catálogo, carrito, autenticación, gestión administrativa y flujo de pedidos. Existe en dos versiones: el sitio estático del Foro 1 y la aplicación React del Foro 2, que agrega estado global, componentes reutilizables, una API externa y pruebas automáticas.
 
 Es una solución ideal para demostrar competencias en diseño web, lógica de programación, trabajo en equipo y entrega de un producto con enfoque académico y profesional.
