@@ -1,5 +1,7 @@
 # SaborExpress
 
+[![Licencia: CC BY-NC-SA 4.0](https://img.shields.io/badge/Licencia-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/) [![Sitio publicado](https://img.shields.io/badge/Sitio-Netlify-00C7B7.svg)](https://saborexpress-react.netlify.app/)
+
 SaborExpress es una propuesta de e-commerce gastronómico orientada a la venta de pupusas y alimentos tradicionales salvadoreños. El proyecto fue desarrollado como parte de la etapa de cátedra, con el objetivo de poner en práctica conceptos de maquetación web, interacción con JavaScript, trabajo colaborativo y diseño de experiencia de usuario.
 
 La idea principal del sistema es permitir a un cliente navegar el catálogo, elegir productos, gestionar un carrito de compras y realizar un pedido de forma sencilla, además de ofrecer un panel administrativo para administrar el menú y el estado de los pedidos.
@@ -8,14 +10,76 @@ La idea principal del sistema es permitir a un cliente navegar el catálogo, ele
 
 ## 🔗 Enlaces del proyecto
 
-El repositorio contiene **dos versiones** del sitio: la del Foro 1 (HTML, CSS y JavaScript, en las carpetas de la raíz) y la aplicación React del Foro 2 (carpeta `frontend/`).
+**Entrega final:** la aplicación publicada en Netlify es la versión completa del proyecto. El repositorio conserva también la versión del Foro 1 y contiene **dos versiones** del sitio: la del Foro 1 (HTML, CSS y JavaScript, en las carpetas de la raíz) y la aplicación React del Foro 2 (carpeta `frontend/`).
 
 | Entrega | Sitio publicado | Video de demostración |
 | --- | --- | --- |
 | Foro 1: HTML, CSS y JavaScript | [Abrir sitio](https://abnerdiazz.github.io/SaborExpress-DAW/) | [Ver video](https://drive.google.com/file/d/1TDZSLtAe6zYHCqH77WyTOrAhEAmyjyy2/view) |
-| Foro 2: aplicación React | [Abrir sitio](https://saborexpress-react.netlify.app/) | [Ver video](https://drive.google.com/file/d/1_i5_3z2qiql3eq87jH1KtFvsDlK6kHYL/view?usp=drive_link) |
+| Foro 2 y entrega final: aplicación React completa | [Abrir sitio](https://saborexpress-react.netlify.app/) | [Ver video](https://drive.google.com/file/d/1_i5_3z2qiql3eq87jH1KtFvsDlK6kHYL/view?usp=drive_link) |
 
 Documentos de investigación (formato APA 7): [Foro 1: librerías de JavaScript](docs/Investigacion-Librerias-Foro1.pdf) · [Foro 2: React y la API Nominatim](docs/Investigacion-React-Foro2.pdf)
+
+---
+
+## 🎨 Mockups de Figma (Etapa 1)
+
+Diseño de las vistas principales, elaborado en Figma durante la Etapa 1: [abrir el archivo de Figma](https://www.figma.com/design/nTGOi2J5tq3bWxbWwutViB/Untitled?node-id=0-1&t=vN3KPfjG4rG4PCW4-1). La aplicación final sigue estas pantallas (barra de navegación, tarjetas, tablas, colores y estados) y las amplía con las vistas que se añadieron después (Inicio, Nosotros, Contacto, Registro, Checkout, Menú y Mensajes del administrador).
+
+### Vistas del cliente
+
+| Inicio de sesión | Menú |
+| --- | --- |
+| ![Mockup de inicio de sesión](docs/mockups/01-login.png) | ![Mockup del menú](docs/mockups/02-menu.png) |
+
+| Carrito | Mis pedidos |
+| --- | --- |
+| ![Mockup del carrito](docs/mockups/03-carrito.png) | ![Mockup de mis pedidos](docs/mockups/04-mis-pedidos.png) |
+
+### Vista del administrador
+
+![Mockup de reportes del administrador](docs/mockups/05-reportes-admin.png)
+
+### Arquitectura propuesta y diagramas de flujo
+
+La propuesta de la Etapa 1 contemplaba React, la API Nominatim, Chart.js y `localStorage` para la sesión. En la implementación final los datos se guardan en `localStorage` (como indica el requisito de seguridad básica del proyecto) y no se usa un servicio de base de datos externo, por lo que no hay credenciales que proteger en el repositorio público.
+
+![Arquitectura propuesta](docs/mockups/06-arquitectura.png)
+
+| Flujo del pedido (1/2) | Flujo del pedido (2/2) |
+| --- | --- |
+| ![Diagrama de flujo: inicio del pedido](docs/mockups/07-flujo-inicio.png) | ![Diagrama de flujo: zona de cobertura](docs/mockups/08-flujo-cobertura.png) |
+
+| Confirmación | Estados del pedido | Cierre |
+| --- | --- | --- |
+| ![Diagrama de flujo: confirmación](docs/mockups/09-flujo-confirmar.png) | ![Diagrama de flujo: estados](docs/mockups/10-flujo-estados.png) | ![Diagrama de flujo: cierre](docs/mockups/11-flujo-fin.png) |
+
+### Arquitectura de componentes de la aplicación React
+
+![Arquitectura de componentes de la aplicación React](docs/capturas/diagrama-componentes.png)
+
+---
+
+## ✅ Entrega final: requisitos y cómo se cumplen
+
+| # | Requisito de la entrega final | Cómo se cumple | Dónde |
+| --- | --- | --- | --- |
+| 1 | Aplicación desplegada en hosting gratuito | Netlify (React) y GitHub Pages (Foro 1) | [saborexpress-react.netlify.app](https://saborexpress-react.netlify.app/) |
+| 2 | Framework JS en toda la aplicación | React 19 con React Router: las 13 pantallas son componentes de React | `frontend/src/pages`, `frontend/src/components` |
+| 3 | API externa con datos integrados al flujo | Nominatim (OpenStreetMap) en el checkout: busca direcciones y obtiene la dirección del punto marcado | `frontend/src/services/nominatim.js` |
+| 4 | Módulos principales y secundarios | Principales: catálogo, carrito y checkout, cuenta, pedidos, panel del administrador. Secundarios: reportes, mensajes de contacto, contacto y nosotros | `frontend/src/pages` |
+| 5 | Reportes con gráfica dinámica | Cuatro gráficas de Chart.js con filtros de fechas, detalle por día y exportación CSV | `frontend/src/pages/admin/ReportesPage.jsx` |
+| 6 | UX/UI profesional y responsive, coherente con Figma | Bootstrap 5 y estilos propios; revisada en 360, 768 y 1280 px sin desbordes | sección Mockups de este README |
+| 7 | Mockups en el README | Sección **Mockups de Figma** | este documento |
+| 8 | Licencia Creative Commons | CC BY-NC-SA 4.0 | archivo [`LICENSE`](LICENSE) |
+| 9 | Repositorio con rama por alumno, colaboradores y README | Una rama por integrante, todos colaboradores, cambios por Pull Request | sección **Equipo y flujo de trabajo** |
+
+### Seguridad básica
+
+- **Validación de entradas** en todos los formularios (inicio de sesión, registro, contacto, checkout y administración), campo por campo.
+- **Sesiones** con `localStorage`, independientes para cliente y administrador; las rutas del panel exigen el rol de administrador.
+- **Sin secretos en el repositorio:** no hay claves de API (Nominatim no las requiere) y `.env` está en `.gitignore`. La cuenta de administrador de abajo es solo de demostración.
+- El texto que escribe un cliente se escapa antes de mostrarse en los paneles, para evitar inyección de HTML.
+- Una prueba automática (`requisitos-finales.test.js`) revisa la licencia, el README, las rutas, los roles y que no haya secretos en el código.
 
 ---
 
@@ -32,7 +96,7 @@ El sitio se compone de varias páginas funcionales que simulan un flujo real de 
 - Área de reportes con gráficas interactivas para analizar la operación.
 - Diálogos de confirmación y avisos con SweetAlert2, validación de formularios campo por campo y comprobante de pedido en PDF.
 - Zona de cobertura de entregas sobre un mapa interactivo.
-- Aplicación React (Foro 2) que consume una API externa real (Nominatim), con estado global, componentes reutilizables y 163 pruebas automáticas.
+- Aplicación React (Foro 2) que consume una API externa real (Nominatim), con estado global, componentes reutilizables y 203 pruebas automáticas.
 
 El enfoque del proyecto no fue crear un backend real, sino presentar una solución frontend completa con almacenamiento local mediante `localStorage`, lo cual permite simular persistencia de datos sin necesidad de una base de datos o servidor externo.
 
@@ -116,7 +180,11 @@ SaborExpress-DAW/
 │   ├── inicio-nosotros.css
 │   ├── login-mispedidos.css
 │   └── menu-reportes.css
+├── LICENSE                    (Creative Commons BY-NC-SA 4.0)
 ├── docs/
+│   ├── mockups/               (mockups de Figma y diagramas de flujo)
+│   ├── capturas/              (capturas y diagrama de componentes)
+│   ├── modulos/               (documentación técnica de cada módulo)
 │   ├── Investigacion-Librerias-Foro1.pdf
 │   └── Investigacion-React-Foro2.pdf
 ├── img/
@@ -159,7 +227,7 @@ SaborExpress-DAW/
 │       ├── hooks/             (hooks propios)
 │       ├── services/          (lógica sin React y cliente de la API)
 │       ├── styles/
-│       └── test/              (163 pruebas automáticas)
+│       └── test/              (203 pruebas automáticas)
 ├── netlify.toml               (configuración de publicación en Netlify)
 └── README.md
 ```
@@ -218,10 +286,14 @@ El admin cuenta con herramientas para:
 - filtrar pedidos por estado;
 - cambiar el estado de cada pedido (Pendiente, Preparando, En camino, Entregado, Cancelado); Entregado y Cancelado son estados finales y piden confirmación;
 - ocultar o mostrar productos sin eliminarlos;
+- leer y gestionar los mensajes de contacto;
 - recibir los pedidos nuevos sin recargar la página.
 
-### 7. Reportes
-La sección administrativa incluye cuatro gráficas de Chart.js (ventas por día, pedidos por día, ingresos por categoría y estado de los pedidos), indicadores clave, filtros por rango de fechas y exportación a CSV. Al hacer clic en una barra de ventas se abre el detalle de los pedidos de ese día. Para pruebas y demostraciones, el panel permite generar y quitar pedidos de ejemplo claramente identificados, sin tocar los pedidos reales.
+### 7. Mensajes de contacto (administrador)
+Los mensajes que los clientes envían desde Contacto llegan a una bandeja del administrador: se pueden filtrar (todos, sin leer, leídos), buscar, leer completos, marcar como leídos o sin leer, responder por correo y eliminar con confirmación. Al responder, el correo se abre ya dirigido al cliente, con el asunto "Re: …", un saludo, un agradecimiento general elegido al azar (que se puede editar) y la firma del equipo SaborExpress; también hay un botón para abrirlo en Gmail con la cuenta del negocio. del administrador muestra cuántos mensajes están sin leer y se actualiza sola.
+
+### 8. Reportes
+La sección administrativa incluye cuatro gráficas de Chart.js (ventas por día, pedidos por día, ingresos por categoría y estado de los pedidos), indicadores clave, filtros por rango de fechas y exportación a CSV (resumen por categoría y detalle de pedidos). Al hacer clic en una barra de ventas se abre el detalle de los pedidos de ese día. Para pruebas y demostraciones, el panel permite generar y quitar pedidos de ejemplo claramente identificados, sin tocar los pedidos reales.
 
 ---
 
@@ -240,7 +312,7 @@ Los clientes se registran desde `registro.html` (contraseña de mínimo 8 caract
 
 ## ▶️ Cómo ejecutar el proyecto
 
-Hay dos versiones: la del Foro 1 es estática y no requiere instalación, y la del Foro 2 usa Node.js.
+Hay dos versiones: la del Foro 1 es estática y no requiere instalación, y la aplicación React (Foro 2 y entrega final) usa Node.js.
 
 ### Sitio del Foro 1: con Live Server (recomendado)
 
@@ -258,7 +330,7 @@ Requiere Node.js 20.19 o superior. Desde la raíz del repositorio:
 cd frontend
 npm install
 npm run dev      # http://localhost:5173
-npm test         # 163 pruebas automáticas
+npm test         # 203 pruebas automáticas
 npm run build    # versión de producción en frontend/dist
 ```
 
@@ -288,12 +360,12 @@ En el Foro 2 el sitio se reconstruyó como una aplicación de una sola página c
 
 | Requerimiento | Cómo se cumple | Dónde |
 | --- | --- | --- |
-| Framework JavaScript integrado | React 19 con Vite: doce pantallas y más de veinte componentes reutilizables | `frontend/src/pages`, `frontend/src/components` |
+| Framework JavaScript integrado | React 19 con Vite: trece pantallas y más de veinte componentes reutilizables | `frontend/src/pages`, `frontend/src/components` |
 | API externa con datos reales | Nominatim (OpenStreetMap): busca una dirección escrita y obtiene la dirección del punto marcado en el mapa. Una consulta por segundo, caché, tiempo máximo, cancelación y mensajes de error | `frontend/src/services/nominatim.js`, `frontend/src/hooks/useGeocodificacion.js` |
 | Manejo de estado | Context API (sesión, catálogo, carrito y pedidos) y un hook que mantiene sincronizadas las pestañas del navegador | `frontend/src/context`, `frontend/src/hooks/useStoredValue.js` |
 | Componentes reutilizables | Formularios con validación, modal, paginación, barras de navegación, gráficas y mapa | `frontend/src/components` |
 | Módulos secundarios | Contacto, Nosotros, Mis pedidos, Reportes y los paneles del administrador | `frontend/src/pages` |
-| Pruebas | 163 pruebas con Vitest y Testing Library | `frontend/src/test` |
+| Pruebas | 203 pruebas con Vitest y Testing Library | `frontend/src/test` |
 | Documento de investigación (APA 7) | Explica React, la arquitectura, el estado, la API y las pruebas | `docs/Investigacion-React-Foro2.pdf` |
 
 ### Estructura de `frontend/src`
@@ -310,7 +382,7 @@ En el Foro 2 el sitio se reconstruyó como una aplicación de una sola página c
 
 ### API externa: Nominatim
 
-En el checkout, al escribir una dirección y pulsar el botón de buscar, la aplicación consulta Nominatim y muestra hasta cinco sugerencias; al elegir una, el pin del mapa se mueve a esa ubicación. Al mover el pin, la aplicación obtiene la dirección de ese punto y la ofrece para el campo de entrega. Respeta la política de uso del servicio (una consulta por segundo y sin autocompletado) y, si la API falla, muestra un mensaje claro y la persona puede escribir la dirección a mano.
+En el checkout, al escribir una dirección y pulsar el botón de buscar, la aplicación consulta Nominatim y muestra hasta cinco sugerencias; al elegir una, el pin del mapa se mueve a esa ubicación. Al mover el pin, la aplicación obtiene la dirección de ese punto y la ofrece para el campo de entrega. Respeta la política de uso del servicio (una consulta por segundo y sin autocompletado) y, si la API falla, muestra un mensaje claro, ofrece un botón **Reintentar** y la persona puede escribir la dirección a mano.
 
 ### Capturas de la aplicación React
 
@@ -343,6 +415,12 @@ Filtros por estado, paginación y confirmación de los estados finales.
 Cuatro gráficas con react-chartjs-2, detalle por día y exportación a CSV.
 
 ![Panel de reportes con las cuatro gráficas](img/capturas/react-reportes.png)
+
+#### Bandeja de mensajes del administrador
+
+Mensajes de Contacto con filtros, insignia de "Nuevo", lectura, marcar como leído y eliminar.
+
+![Bandeja de mensajes del administrador](img/capturas/react-mensajes.png)
 
 #### Aplicación publicada en Netlify
 
@@ -459,8 +537,7 @@ Panel con indicadores, gráfica de ventas por día, pedidos por día, ingresos p
 - La persistencia se realiza con `localStorage`, lo que simula almacenamiento de datos sin backend.
 - La navegación y los formularios están diseñados para funcionar en un ambiente estático.
 - El proyecto está orientado a una experiencia de compra simple y clara, pensada para entregar un demo funcional de negocio digital.
-- Al usar `localStorage`, los datos viven en cada navegador y no se comparten entre dispositivos; la sincronización entre pestañas del mismo navegador sí funciona. La base de datos en la nube corresponde a una etapa posterior.
-- La aplicación React del Foro 2 también guarda los datos en `localStorage`; la sincronización entre pestañas del mismo navegador funciona, pero los datos no se comparten entre dispositivos. La base de datos en la nube queda para la entrega final.
+- Ambas versiones guardan los datos en `localStorage`, como indica el requisito de seguridad básica del proyecto (manejo de sesiones con `localStorage` y sin credenciales en el repositorio público). La sincronización entre pestañas del mismo navegador funciona, pero los datos no se comparten entre dispositivos; una base de datos en la nube sería el siguiente paso de crecimiento del sistema.
 - La API Nominatim es un servicio público: puede limitar las consultas o no estar disponible, y por eso la aplicación maneja esos errores y permite escribir la dirección a mano.
 - La autenticación es simulada: las contraseñas se guardan sin cifrar en `localStorage` y las credenciales del administrador están en el código. Es válido para esta demostración, pero no para producción.
 
@@ -468,6 +545,28 @@ Panel con indicadores, gráfica de ventas por día, pedidos por día, ingresos p
 
 ## ✅ Estado del proyecto
 
-El proyecto se encuentra desarrollado como una propuesta funcional, con navegación completa, catálogo, carrito, autenticación, gestión administrativa y flujo de pedidos. Existe en dos versiones: el sitio estático del Foro 1 y la aplicación React del Foro 2, que agrega estado global, componentes reutilizables, una API externa y pruebas automáticas.
+El proyecto se encuentra desarrollado como una propuesta funcional, con navegación completa, catálogo, carrito, autenticación, gestión administrativa y flujo de pedidos. Existe en dos versiones: el sitio estático del Foro 1 y la aplicación React (Foro 2 y entrega final), que agrega estado global, componentes reutilizables, una API externa, una bandeja de mensajes para el administrador y pruebas automáticas.
 
 Es una solución ideal para demostrar competencias en diseño web, lógica de programación, trabajo en equipo y entrega de un producto con enfoque académico y profesional.
+
+---
+
+## 🤝 Equipo y flujo de trabajo
+
+Cada integrante trabajó en su propia rama (`Abner`, `Marlene`, `Jason`, `Blanca` y `Elias`), con commits descriptivos, y sus cambios entraron a `main` mediante Pull Request con *merge commit*, de modo que el historial muestra quién hizo cada parte. Todos son colaboradores del repositorio.
+
+| Integrante | Rama | Responsabilidad principal |
+| --- | --- | --- |
+| Abner Isaí Díaz Rivera | `Abner` | Base del proyecto, estado global, navegación, componentes, publicación, README y licencia |
+| Marlene Yamileth Pérez Alvarado | `Marlene` | Menú público y panel de reportes con gráficas |
+| Jason Steven Durán López | `Jason` | Registro, inicio de sesión y mis pedidos |
+| Blanca Margarita Rivas Sandoval | `Blanca` | Contacto, panel de pedidos y menú del administrador, bandeja de mensajes |
+| Elias Grande Beltrán | `Elias` | Carrito, checkout, API Nominatim, mapa y comprobante PDF |
+
+La documentación técnica de cada módulo está en [`docs/modulos`](docs/modulos).
+
+---
+
+## 📄 Licencia
+
+Este proyecto se publica bajo la licencia **Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)**. Puedes copiar, adaptar y compartir el contenido citando al equipo, sin fines comerciales y conservando la misma licencia. El texto completo está en [`LICENSE`](LICENSE) y un resumen en <https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es>. Las librerías de terceros (React, Bootstrap, Chart.js, Leaflet y otras) conservan sus propias licencias.
