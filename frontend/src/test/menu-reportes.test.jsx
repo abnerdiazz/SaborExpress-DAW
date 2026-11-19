@@ -274,6 +274,36 @@ describe('Reportes (Chart.js)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('exporta el detalle de los pedidos del periodo en un CSV', async () => {
+    const usuario = userEvent.setup();
+    sembrarAdmin();
+    sembrarPedidos();
+    const crear = vi.fn(() => 'blob:prueba');
+    URL.createObjectURL = crear;
+    URL.revokeObjectURL = vi.fn();
+    const clic = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    renderApp('/admin/reportes');
+    await screen.findByRole('heading', { name: 'Reportes' });
+    await usuario.click(screen.getByRole('button', { name: /Pedidos CSV/ }));
+    expect(crear).toHaveBeenCalledTimes(1);
+    expect(crear.mock.calls[0][0]).toBeInstanceOf(Blob);
+    expect(clic).toHaveBeenCalled();
+    expect(Swal.fire.mock.calls.some(([o]) => o.toast && /Pedidos exportados/.test(o.title))).toBe(true);
+    clic.mockRestore();
+  });
+
+  it('si no hay pedidos en el periodo, avisa y no descarga nada', async () => {
+    const usuario = userEvent.setup();
+    sembrarAdmin();
+    const crear = vi.fn(() => 'blob:prueba');
+    URL.createObjectURL = crear;
+    renderApp('/admin/reportes');
+    await screen.findByRole('heading', { name: 'Reportes' });
+    await usuario.click(screen.getByRole('button', { name: /Pedidos CSV/ }));
+    expect(crear).not.toHaveBeenCalled();
+    expect(Swal.fire.mock.calls.some(([o]) => o.toast && /No hay pedidos en el periodo/.test(o.title))).toBe(true);
+  });
+
   it('busca categorías en la tabla y exporta el CSV', async () => {
     const usuario = userEvent.setup();
     sembrarAdmin();
@@ -292,7 +322,7 @@ describe('Reportes (Chart.js)', () => {
     expect(within(tabla).queryByText('Pupusas')).not.toBeInTheDocument();
     await usuario.type(screen.getByLabelText('Buscar categoría'), 'zzz');
     expect(screen.getByText('No se encontraron categorías con ese criterio.')).toBeInTheDocument();
-    await usuario.click(screen.getByRole('button', { name: /CSV/ }));
+    await usuario.click(screen.getByRole('button', { name: 'CSV' }));
     expect(crear).toHaveBeenCalledTimes(1);
     expect(crear.mock.calls[0][0]).toBeInstanceOf(Blob);
     expect(clic).toHaveBeenCalled();
