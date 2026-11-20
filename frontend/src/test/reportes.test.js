@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   agrupar, categoriasACsv, construirSerieDiaria, contarDemo, contarPorEstado, eliminarDatosDemo, generarDatosDemo,
-  indicadores, normalizarEstado, pedidosDelDia, pedidosEnRango, rangoActual
+  indicadores, normalizarEstado, pedidosACsv, pedidosDelDia, pedidosEnRango, rangoActual
 } from '../services/reportes.js';
 import { CLAVE_PEDIDOS, prepararPedidos } from '../services/pedidos.js';
 import { escribirJSON, leerJSON } from '../services/store.js';
@@ -79,6 +79,27 @@ describe('reportes: números', () => {
     const csv = categoriasACsv([{ categoria: 'Pupu"sas', cantidad: 6, ingreso: 6 }]);
     expect(csv.startsWith('\uFEFF"Categoría"')).toBe(true);
     expect(csv).toContain('"Pupu""sas","6","6.00"');
+  });
+});
+
+describe('reportes: CSV de pedidos', () => {
+  const [pedido] = prepararPedidos([pedidoBase({ id: 'SE-0007', cliente: 'Ana "la mejor"', subtotal: 1.7, envio: 1, total: 2.7, estado: 'Cancelado' })]);
+
+  it('una fila por pedido con estado, productos y montos con dos decimales', () => {
+    const csv = pedidosACsv([pedido]);
+    const filas = csv.replace('\uFEFF', '').split('\n');
+    expect(csv.startsWith('\uFEFF"ID"')).toBe(true);
+    expect(filas).toHaveLength(2);
+    expect(filas[1]).toContain('"SE-0007"');
+    expect(filas[1]).toContain('"Cancelado"');
+    expect(filas[1]).toContain('"2x Pupusa Revuelta"');
+    expect(filas[1]).toContain('"1.70","1.00","2.70"');
+    expect(filas[1]).toContain('"Ana ""la mejor"""');
+  });
+
+  it('neutraliza las fórmulas de Excel escritas por un cliente (inyección CSV)', () => {
+    const [malicioso] = prepararPedidos([pedidoBase({ cliente: '=HYPERLINK("http://malo.com")' })]);
+    expect(pedidosACsv([malicioso])).toContain('"\'=HYPERLINK(""http://malo.com"")"');
   });
 });
 

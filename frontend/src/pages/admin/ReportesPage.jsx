@@ -7,7 +7,7 @@ import { aviso, confirmar, mostrar, toast } from '../../services/alertas.js';
 import { esc } from '../../services/compra.js';
 import {
   categoriasACsv, contarDemo, contarPorEstado, construirSerieDiaria, dinero, eliminarDatosDemo,
-  generarDatosDemo, indicadores, pedidosDelDia, pedidosEnRango, rangoActual
+  generarDatosDemo, indicadores, pedidosACsv, pedidosDelDia, pedidosEnRango, rangoActual
 } from '../../services/reportes.js';
 
 const SIN_PERSONALIZAR = null;
@@ -75,15 +75,26 @@ export default function ReportesPage() {
     });
   }, [serie, vigentes]);
 
-  function exportarCsv() {
-    const blob = new Blob([categoriasACsv(resumen.categorias)], { type: 'text/csv;charset=utf-8;' });
+  /** Descarga un archivo CSV con el contenido indicado. */
+  function descargarCsv(contenido, prefijo, mensaje) {
+    const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement('a');
     enlace.href = url;
-    enlace.download = `reporte-saborexpress-${new Date().toISOString().slice(0, 10)}.csv`;
+    enlace.download = `${prefijo}-saborexpress-${new Date().toISOString().slice(0, 10)}.csv`;
     enlace.click();
     URL.revokeObjectURL(url);
-    toast('Reporte CSV descargado.');
+    toast(mensaje);
+  }
+
+  const exportarCsv = () => descargarCsv(categoriasACsv(resumen.categorias), 'reporte', 'Reporte CSV descargado.');
+
+  function exportarPedidos() {
+    if (!todosEnRango.length) {
+      toast('No hay pedidos en el periodo elegido.', 'info');
+      return;
+    }
+    descargarCsv(pedidosACsv(todosEnRango), 'pedidos', 'Pedidos exportados a CSV.');
   }
 
   async function generarDemo() {
@@ -249,6 +260,9 @@ export default function ReportesPage() {
               </div>
               <button className="btn btn-sm btn-outline-dark" type="button" onClick={exportarCsv}>
                 <i className="bi bi-download me-1" />CSV
+              </button>
+              <button className="btn btn-sm btn-outline-dark" type="button" onClick={exportarPedidos}>
+                <i className="bi bi-file-earmark-spreadsheet me-1" />Pedidos CSV
               </button>
             </div>
           </div>

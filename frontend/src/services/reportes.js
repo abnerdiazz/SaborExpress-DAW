@@ -133,14 +133,43 @@ export function pedidosDelDia(pedidos, dia) {
   return pedidos.filter(p => p.creadoEn >= desde && p.creadoEn <= hasta).sort((a, b) => a.creadoEn - b.creadoEn);
 }
 
-/** Contenido CSV (con BOM para que Excel respete los acentos). */
+/**
+ * Celda de CSV entre comillas. Si el texto empieza con =, +, - o @ Excel lo trataría como una fórmula
+ * (ataque de "inyección CSV" con datos escritos por clientes), así que se le antepone una comilla simple.
+ */
+const celdaCsv = valor => {
+  const texto = String(valor ?? '');
+  const seguro = /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
+  return `"${seguro.replaceAll('"', '""')}"`;
+};
+
+/** Une las filas en texto CSV, con BOM para que Excel respete los acentos. */
+const aCsv = filas => `\uFEFF${filas.map(fila => fila.map(celdaCsv).join(',')).join('\n')}`;
+
+/** Contenido CSV del resumen por categoría. */
 export function categoriasACsv(categorias) {
-  const filas = [
+  return aCsv([
     ['Categoría', 'Ordenado (cant.)', 'Total recaudado'],
     ...categorias.map(c => [c.categoria, c.cantidad, c.ingreso.toFixed(2)])
-  ];
-  const csv = filas.map(fila => fila.map(celda => `"${String(celda).replaceAll('"', '""')}"`).join(',')).join('\n');
-  return `\uFEFF${csv}`;
+  ]);
+}
+
+/** Contenido CSV con el detalle de los pedidos (uno por fila), incluidos los cancelados con su estado. */
+export function pedidosACsv(pedidos) {
+  return aCsv([
+    ['ID', 'Fecha', 'Cliente', 'Correo', 'Estado', 'Productos', 'Subtotal', 'Envío', 'Total'],
+    ...pedidos.map(p => [
+      p.id,
+      p.creadoEn.toLocaleString('es-SV'),
+      p.cliente || 'Cliente web',
+      p.email || '',
+      p.estado,
+      p.items.map(item => `${item.cantidad}x ${item.nombre}`).join('; '),
+      Number(p.subtotal || 0).toFixed(2),
+      Number(p.envio || 0).toFixed(2),
+      Number(p.total || 0).toFixed(2)
+    ])
+  ]);
 }
 
 /* -------------------------------------------------------------------------- */
