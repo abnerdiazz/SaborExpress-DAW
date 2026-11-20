@@ -70,7 +70,7 @@ export default function ContactoPage() {
         <hr className="contact-divider my-5" />
 
         <section className="pb-5">
-          <div className="row g-5">
+          <div className="row g-4 g-lg-5">
             <div className="col-lg-7">
               <h2 className="section-title mb-4">Envíanos un Mensaje</h2>
               <form ref={formulario} onSubmit={enviar} noValidate>
