@@ -355,3 +355,28 @@ describe('Mis pedidos', () => {
     expect(screen.queryByRole('button', { name: /cancelar pedido/i })).not.toBeInTheDocument();
   });
 });
+
+describe('Mostrar contraseña', () => {
+  it('en el login la contraseña se oculta por defecto y se puede mostrar', async () => {
+    const usuario = userEvent.setup();
+    renderApp('/login');
+    const campo = await screen.findByLabelText('Contraseña');
+    expect(campo).toHaveAttribute('type', 'password');
+    await usuario.click(screen.getByLabelText('Mostrar contraseña'));
+    expect(campo).toHaveAttribute('type', 'text');
+    await usuario.click(screen.getByLabelText('Mostrar contraseña'));
+    expect(campo).toHaveAttribute('type', 'password');
+  });
+
+  it('en el registro una sola casilla muestra u oculta la contraseña y su confirmación', async () => {
+    const usuario = userEvent.setup();
+    renderApp('/registro');
+    const campo = await screen.findByLabelText('Contraseña');
+    const confirmacion = screen.getByLabelText('Confirmar Contraseña');
+    expect(campo).toHaveAttribute('type', 'password');
+    expect(confirmacion).toHaveAttribute('type', 'password');
+    await usuario.click(screen.getByLabelText('Mostrar contraseña'));
+    expect(campo).toHaveAttribute('type', 'text');
+    expect(confirmacion).toHaveAttribute('type', 'text');
+  });
+});
