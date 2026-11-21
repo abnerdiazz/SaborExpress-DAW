@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import MostrarPassword from '../components/cuenta/MostrarPassword.jsx';
 import FormField from '../components/ui/FormField.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { enfocarPrimerError, useCampo, validarTodos } from '../hooks/useCampo.js';
@@ -21,6 +22,7 @@ export default function LoginPage() {
 
   const correo = useCampo(reglas.correo);
   const password = useCampo(reglas.passwordLogin);
+  const [verPassword, setVerPassword] = useState(false);
 
   // Un cliente con sesión no necesita ver el login, salvo que venga de un panel de administración
   // (así puede entrar como admin sin cerrar la sesión de cliente).
@@ -97,7 +99,8 @@ export default function LoginPage() {
           placeholder="ejemplo@correo.com" autoComplete="username"
         />
         <FormField
-          id="loginPassword" label="Contraseña" type="password" campo={password} className="mb-4"
+          id="loginPassword" label="Contraseña" type={verPassword ? 'text' : 'password'} campo={password} className="mb-4"
+          ayuda={<MostrarPassword id="loginVerPassword" visible={verPassword} onCambiar={setVerPassword} />}
           labelClass="form-label-soft d-block" inputClass="form-control form-control-soft"
           placeholder="••••••••" autoComplete="current-password"
         />

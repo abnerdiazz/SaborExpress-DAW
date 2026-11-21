@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useMensajes } from '../../hooks/useMensajes.js';
 import { confirmar, toast } from '../../services/alertas.js';
 
 const claseEnlace = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
@@ -8,6 +9,7 @@ const claseEnlace = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
 /** Barra de navegación de los paneles de administración. */
 export default function AdminNavbar() {
   const { sesionAdmin, cerrarSesion } = useAuth();
+  const { noLeidos } = useMensajes();
   const navegar = useNavigate();
   const ubicacion = useLocation();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -59,6 +61,12 @@ export default function AdminNavbar() {
             <li className="nav-item"><NavLink className={claseEnlace} to="/admin/pedidos">Pedidos</NavLink></li>
             <li className="nav-item"><NavLink className={claseEnlace} to="/admin/menu">Menú</NavLink></li>
             <li className="nav-item"><NavLink className={claseEnlace} to="/admin/reportes">Reportes</NavLink></li>
+            <li className="nav-item">
+              <NavLink className={claseEnlace} to="/admin/mensajes">
+                Mensajes
+                {noLeidos > 0 && <span className="badge rounded-pill text-bg-danger ms-1" aria-label={`${noLeidos} sin leer`}>{noLeidos}</span>}
+              </NavLink>
+            </li>
             <li className="nav-item dropdown ms-lg-2" ref={cuentaRef}>
               <button className="btn admin-account-btn dropdown-toggle" type="button" aria-expanded={cuentaAbierta} onClick={() => setCuentaAbierta(valor => !valor)}>
                 <i className="bi bi-person-circle me-1" />

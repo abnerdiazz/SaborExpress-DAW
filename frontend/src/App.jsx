@@ -19,6 +19,7 @@ const RegistroPage = lazy(() => import('./pages/RegistroPage.jsx'));
 const PedidosPage = lazy(() => import('./pages/admin/PedidosPage.jsx'));
 const AdminMenuPage = lazy(() => import('./pages/admin/AdminMenuPage.jsx'));
 const ReportesPage = lazy(() => import('./pages/admin/ReportesPage.jsx'));
+const MensajesPage = lazy(() => import('./pages/admin/MensajesPage.jsx'));
 
 /** Mapa de rutas de la aplicación (el enrutador y los proveedores se montan en main.jsx). */
 export default function App() {
@@ -50,6 +51,7 @@ export default function App() {
               <Route path="pedidos" element={<PedidosPage />} />
               <Route path="menu" element={<AdminMenuPage />} />
               <Route path="reportes" element={<ReportesPage />} />
+              <Route path="mensajes" element={<MensajesPage />} />
             </Route>
           </Route>
 
