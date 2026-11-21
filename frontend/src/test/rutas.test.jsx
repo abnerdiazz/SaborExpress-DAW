@@ -44,7 +44,7 @@ describe('Rutas protegidas', () => {
     expect(await screen.findByLabelText('Correo Electrónico')).toBeInTheDocument();
   });
 
-  it('el menú del administrador navega entre los tres paneles', async () => {
+  it('el menú del administrador navega entre sus paneles', async () => {
     const usuario = userEvent.setup();
     sembrarAdmin();
     renderApp('/admin');
