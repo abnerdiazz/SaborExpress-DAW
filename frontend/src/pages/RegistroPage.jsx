@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import MostrarPassword from '../components/cuenta/MostrarPassword.jsx';
 import PasswordMeter from '../components/cuenta/PasswordMeter.jsx';
 import FormField from '../components/ui/FormField.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -34,6 +35,7 @@ export default function RegistroPage() {
   const telefono = useCampo(reglas.telefono, '', { formatear: formatearTelefono });
   const password = useCampo(reglas.passwordNueva);
   const confirmar = useCampo(reglas.coincide(() => password.valor));
+  const [verPassword, setVerPassword] = useState(false);
 
   // Si se cambia la contraseña después de repetirla, la confirmación se vuelve a comprobar.
   useEffect(() => {
@@ -76,10 +78,15 @@ export default function RegistroPage() {
           placeholder="juan.perez@correo.com" autoComplete="email" />
         <FormField id="registroTelefono" label="Teléfono (WhatsApp)" type="tel" campo={telefono} {...ESTILO_FORM}
           placeholder="7777-7777" inputMode="numeric" autoComplete="tel" maxLength={9} />
-        <FormField id="registroPassword" label="Contraseña" type="password" campo={password} {...ESTILO_FORM}
+        <FormField id="registroPassword" label="Contraseña" type={verPassword ? 'text' : 'password'} campo={password} {...ESTILO_FORM}
           placeholder="Mínimo 8 caracteres, con letras y números" autoComplete="new-password"
-          ayuda={<PasswordMeter password={password.valor} />} />
-        <FormField id="registroConfirmar" label="Confirmar Contraseña" type="password" campo={confirmar} className="mb-4"
+          ayuda={(
+            <>
+              <PasswordMeter password={password.valor} />
+              <MostrarPassword id="registroVerPassword" visible={verPassword} onCambiar={setVerPassword} />
+            </>
+          )} />
+        <FormField id="registroConfirmar" label="Confirmar Contraseña" type={verPassword ? 'text' : 'password'} campo={confirmar} className="mb-4"
           {...ESTILO_FORM} placeholder="Repetir contraseña" autoComplete="new-password" />
         <button type="submit" className="btn btn-brand w-100">Registrarse</button>
       </form>
