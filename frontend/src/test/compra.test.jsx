@@ -261,6 +261,19 @@ describe('Checkout', () => {
       await waitFor(() => expect(huboDialogo('¿Confirmar tu pedido?')).toBe(true));
     });
 
+    it('si la API falla se puede reintentar y, al responder, se muestra la dirección', async () => {
+      const usuario = userEvent.setup();
+      preparar();
+      direccionDesdeCoordenadas.mockRejectedValueOnce(new ErrorApi('red', 'Sin conexión')).mockResolvedValue(DIRECCION_API);
+      renderApp('/checkout');
+      await usuario.click(await screen.findByRole('button', { name: 'marcar-dentro' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/No hay conexión con el servicio de mapas/);
+      await usuario.click(screen.getByRole('button', { name: /Reintentar/ }));
+      expect(await screen.findByText(DIRECCION_API.texto, { selector: 'strong' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Reintentar/ })).not.toBeInTheDocument();
+      expect(direccionDesdeCoordenadas).toHaveBeenCalledTimes(2);
+    });
+
     it('busca una dirección con el botón, muestra las sugerencias y al elegir una mueve el pin', async () => {
       const usuario = userEvent.setup();
       preparar();

@@ -251,7 +251,12 @@ export default function CheckoutPage() {
                 </p>
               )}
               {ubicacion && !detectada.cargando && detectada.error && (
-                <p className="address-status text-danger" role="alert">{detectada.error}</p>
+                <>
+                  <p className="address-status text-danger mb-1" role="alert">{detectada.error}</p>
+                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={detectada.reintentar}>
+                    <i className="bi bi-arrow-repeat me-1" />Reintentar
+                  </button>
+                </>
               )}
             </div>
 

@@ -41,6 +41,8 @@ export function useDireccionDeUbicacion(ubicacion, espera = 800) {
   const clave = ubicacion ? `${ubicacion.lat.toFixed(5)},${ubicacion.lng.toFixed(5)}` : '';
   const claveEstable = useDebounce(clave, espera);
   const [estado, setEstado] = useState({ direccion: null, cargando: false, error: '' });
+  const [intento, setIntento] = useState(0); // al subir, la consulta se repite para el mismo punto
+  const reintentar = useCallback(() => setIntento(n => n + 1), []);
 
   useEffect(() => {
     if (!claveEstable) {
@@ -57,9 +59,9 @@ export function useDireccionDeUbicacion(ubicacion, espera = 800) {
         setEstado({ direccion: null, cargando: false, error: mensajeDeError(error) });
       });
     return () => control.abort();
-  }, [claveEstable]);
+  }, [claveEstable, intento]);
 
   // Mientras el pin se mueve (la clave aún no se estabilizó) se muestra "buscando".
   const moviendo = clave !== '' && clave !== claveEstable;
-  return { ...estado, cargando: estado.cargando || moviendo };
+  return { ...estado, cargando: estado.cargando || moviendo, reintentar };
 }
