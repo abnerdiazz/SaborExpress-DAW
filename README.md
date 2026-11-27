@@ -17,6 +17,12 @@ La idea principal del sistema es permitir a un cliente navegar el catálogo, ele
 | Foro 1: HTML, CSS y JavaScript | [Abrir sitio](https://abnerdiazz.github.io/SaborExpress-DAW/) | [Ver video](https://drive.google.com/file/d/1TDZSLtAe6zYHCqH77WyTOrAhEAmyjyy2/view) |
 | Foro 2 y entrega final: aplicación React completa | [Abrir sitio](https://saborexpress-react.netlify.app/) | [Ver video](https://drive.google.com/file/d/1_i5_3z2qiql3eq87jH1KtFvsDlK6kHYL/view?usp=drive_link) |
 
+### 🎬 Defensa final en video
+
+[![Defensa final de SaborExpress: clic para ver el video](img/capturas/portada-defensa.png)](https://drive.google.com/file/d/1Vqa1-puPd_LN_urJKWP7opcYWusM8haw/view?usp=drive_link)
+
+**Ver en Drive:** [https://drive.google.com/file/d/1Vqa1-puPd_LN_urJKWP7opcYWusM8haw/view?usp=drive_link](https://drive.google.com/file/d/1Vqa1-puPd_LN_urJKWP7opcYWusM8haw/view?usp=drive_link)
+
 Documentos de investigación (formato APA 7): [Foro 1: librerías de JavaScript](docs/Investigacion-Librerias-Foro1.pdf) · [Foro 2: React y la API Nominatim](docs/Investigacion-React-Foro2.pdf)
 
 ---
