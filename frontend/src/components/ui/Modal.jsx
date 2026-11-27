@@ -25,7 +25,7 @@ export default function Modal({ abierto, titulo, onCerrar, children, pie = null 
     <>
       <div className="modal-react-backdrop" />
       <div
-        className="modal-react"
+        className="modal modal-react"
         role="dialog"
         aria-modal="true"
         aria-labelledby={idTitulo}
